@@ -37,6 +37,26 @@ namespace cds_be.Controllers
             return license;
         }
 
+
+
+        [HttpGet("completed")]
+        public async Task<ActionResult<IEnumerable<License>>> GetCompletedEmployeeLicenses()
+        {
+            var licenses = await _context.Licenses
+                .Include(l => l.Employee)
+                .ThenInclude(e => e.Application)
+                .Where(l => l.Employee.Application.Status == "Đã hoàn thành")
+                .ToListAsync();
+
+            if (licenses == null || licenses.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return licenses;
+        }
+
+
         [HttpPost]
         public async Task<ActionResult<License>> AddLicense(License license)
         {

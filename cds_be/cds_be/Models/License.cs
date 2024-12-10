@@ -29,5 +29,8 @@ namespace cds_be.Models
         public string? SignedBy { get; set; }
 
         public string? Status { get; set; }
+
+        [ForeignKey("EmployeeID")]
+        public Employee? Employee { get; set; }
     }
 }

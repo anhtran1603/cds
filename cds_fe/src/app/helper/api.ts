@@ -316,6 +316,22 @@ export async function getLicenses() {
 
     return res.json();
 }
+export async function getLicensesCompleted() {
+    const res = await fetch(API_URL + `/license/completed`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+        },
+        next: { revalidate: 3600 }
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to fetch data');
+    }
+
+    return res.json();
+}
 
 export async function getLicense(id: string) {
     const res = await fetch(API_URL + `/license/${id}`, {

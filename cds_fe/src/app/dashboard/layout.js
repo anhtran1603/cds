@@ -99,11 +99,11 @@ export default function DashboardLayout({ children }) {
                                         </ul>
                                     )}
                                 </li>
-                                <li className="mb-2">
+                                {/* <li className="mb-2">
                                     <Link href="/dashboard/employee">
                                         <span className={pathname.includes('/dashboard/employee') ? 'block p-2 rounded bg-gray-700' : 'block p-2 rounded hover:bg-gray-700'}> <FontAwesomeIcon icon={faUser} color="white" width={25} /> Quản lý người lái tàu</span>
                                     </Link>
-                                </li>
+                                </li> */}
                                 <li className="mb-2">
                                     <Link href="/dashboard/license">
                                         <span className={pathname.includes('/dashboard/license') ? 'block p-2 rounded bg-gray-700' : 'block p-2 rounded hover:bg-gray-700'}> <FontAwesomeIcon icon={faCertificate} color="white" width={25} />  Quản lý giấy phép</span>
