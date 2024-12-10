@@ -182,7 +182,7 @@ export default function Page() {
         });
     };
 
-    const [maHS, setMaHS] = useState("MHS" + Date.now());
+    const [maHS, setMaHS] = useState("GP" + Date.now());
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -269,14 +269,6 @@ export default function Page() {
         setIsPhanCong(true);
     }
 
-    function formatDate(date) {
-        const d = new Date(date);
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
     const handleGuiThamDinh = async () => {
         var data = {
             ...newApplication,
@@ -311,23 +303,6 @@ export default function Page() {
         }
     }
 
-    // const handleXetDuyet = async () => {
-    //     var data = {
-    //         ...newApplication,
-    //         status: "Đã duyệt",
-    //         reasonRejection: ""
-    //     }
-    //     var rs = await updateApplication(newApplication.applicationID, data);
-
-    //     if (rs) {
-    //         getAppliaction();
-    //         onOpenChange(false);
-    //         toast.success("Xét duyệt thành công");
-    //     } else {
-    //         toast.error("Có lỗi xảy ra, vui lòng thử lại sau");
-    //     }
-    // }
-
     const handleGuiXetDuyet = async () => {
         var data = {
             ...newApplication,
@@ -343,6 +318,7 @@ export default function Page() {
         //lưu giấy phép
         var license = {
             ...newLicense,
+            licenseNumber: maHS,
             employeeID: newEmployee.employeeID,
             issueDate: new Date(newLicense.issueDate).toISOString(),
             expiryDate: new Date(newLicense.expiryDate).toISOString(),
@@ -1002,11 +978,11 @@ export default function Page() {
                                         label="Số giấy phép"
                                         type="text"
                                         name="licenseNumber"
-                                        onChange={handleLicenseChange}
-                                        value={newLicense?.licenseNumber}
+                                        
+                                        value={maHS}
                                         fullWidth
                                         isRequired
-                                        isReadOnly={newApplication.status === "Đã hoàn thành"}
+                                        isReadOnly
                                     />
                                 </div>
                                 <div className="mb-2">

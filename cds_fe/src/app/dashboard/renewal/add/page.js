@@ -121,6 +121,7 @@ export default function Page() {
     };
 
     const [maHS, setMaHS] = useState("MHS" + Date.now());
+  
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -631,7 +632,7 @@ const employeeStatus = [
                                 <div className="mb-2">
                                     {/* <label className="block text-gray-700">Số năm làm phụ tàu</label> */}
                                     <Input
-                                        label="Số năm làm phụ tàu"
+                                        label="Số tháng làm phụ tàu"
                                         type="text"
                                         name="experienceMonths"
                                         value={newEmployee.experienceMonths}

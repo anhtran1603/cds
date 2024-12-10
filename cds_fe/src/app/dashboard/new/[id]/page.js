@@ -182,7 +182,7 @@ export default function Page() {
         });
     };
 
-    const [maHS, setMaHS] = useState("MHS" + Date.now());
+    const [maHS, setMaHS] = useState("GP" + Date.now());
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -343,6 +343,7 @@ export default function Page() {
         //lưu giấy phép
         var license = {
             ...newLicense,
+            licenseNumber: maHS,
             employeeID: newEmployee.employeeID,
             issueDate: new Date(newLicense.issueDate).toISOString(),
             expiryDate: new Date(newLicense.expiryDate).toISOString(),
@@ -365,6 +366,8 @@ export default function Page() {
         const { name, value } = e.target;
         setNewLicense({ ...newLicense, [name]: value });
     };
+
+
     const renderButton = (status) => {
 
         if (status === "Chờ xử lý" && user?.roleId === 1) {
@@ -624,7 +627,7 @@ export default function Page() {
                                     fullWidth
                                     required
                                 />
-                            </div>       
+                            </div>
                         </div>
                     </AccordionItem>
                     <AccordionItem
@@ -1002,8 +1005,7 @@ export default function Page() {
                                         label="Số giấy phép"
                                         type="text"
                                         name="licenseNumber"
-                                        onChange={handleLicenseChange}
-                                        value={newLicense?.licenseNumber}
+                                        value={maHS}
                                         fullWidth
                                         isRequired
                                         isReadOnly={newApplication.status === "Đã hoàn thành" || newApplication.appraiser != user?.userId}
@@ -1063,7 +1065,7 @@ export default function Page() {
                                         onChange={handleLicenseChange}
                                         value={newLicense?.issuingAuthority}
                                         fullWidth
-                                        isReadOnly={newApplication.status === "Đã hoàn thành" ||  user?.userId !== newApplication?.appraiser}
+                                        isReadOnly={newApplication.status === "Đã hoàn thành" || user?.userId !== newApplication?.appraiser}
                                     />
                                 </div>
                                 <div className="mb-2">

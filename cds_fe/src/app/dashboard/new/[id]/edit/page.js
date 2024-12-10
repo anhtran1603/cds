@@ -1,18 +1,17 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react';
 import { Input, Accordion, AccordionItem, Autocomplete, AutocompleteItem, Image, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
-import { faEye, faUpload } from "@fortawesome/free-solid-svg-icons"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { updateApplication, getApplication, updateEmployee, getEmployees, getCompanies } from '../../../../helper/api';
 import UploadFile from '../../../../components/uploadFile';
 import { toast } from 'react-toastify';
 import { useRouter, useParams } from 'next/navigation';
+import { formatDate } from '../../../../helper';
 
 export default function Page() {
     const { id } = useParams(); // Lấy ID từ URL
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
-    const [companyId, setCompanyId] = useState('1');
+    const [companyId, setCompanyId] = useState('');
     const [newApplication, setNewApplication] = useState({
         applicationID: '',
         companyID: '',
@@ -42,6 +41,7 @@ export default function Page() {
     const [personalStatement, setPersonalStatement] = useState(null);
     const [healthCertificateContent, setHealthCertificateContent] = useState(null);
     const [personalStatementContent, setPersonalStatementContent] = useState(null);
+    const [licenseType, setLicenseType] = useState('');
     const [companyName, setCompanyName] = useState('');
 
     const [newEmployee, setNewEmployee] = useState({
@@ -65,26 +65,36 @@ export default function Page() {
     });
 
 
-    const getAppliaction = useCallback(async () => {
+
+
+    const getData = useCallback(async () => {
 
         var data = await getApplication(id);
+        const submitDate = formatDate(data.submitDate);
+        const returnDate = formatDate(data.returnDate);
+        setNewApplication({ ...data, submitDate, returnDate });
 
         setCompanyId(data.companyID.toString());
-        setNewApplication(data);
+
         //get employee
         var dataEmployees = await getEmployees();
         // // console.log("employees", dataEmployees);
 
         var employee = dataEmployees.find(employee => employee?.applicationID === id);
-        setNewEmployee(employee);
 
-    }, [id]);
+        const dateOfBirth = formatDate(employee?.dateOfBirth);
+        setLicenseType(employee?.licenseType);
+        setNewEmployee({ ...employee, dateOfBirth });
+
+    }, [id, getEmployees, getApplication]);
 
 
     useEffect(() => {
-        getAppliaction();
-    }, [getAppliaction]);
+        getData();
 
+    }, [getData]);
+
+    console.log("newEmployee", companyId);
     const handleEmployeeInputChange = (e) => {
         const { name, value } = e.target;
 
@@ -372,14 +382,15 @@ export default function Page() {
                                 </Autocomplete> */}
                                 <Autocomplete
                                     label="Chọn doanh nghiệp"
-                                  
+
                                     name='companyID'
                                     defaultItems={companies}
-                                    defaultInputValue={companyName}
+                                    // defaultInputValue={"Công ty hồng thái"}
                                     onInputChange={handleChangeCompany}
+                                    defaultSelectedKey={companyId+ ""}
 
                                 >
-                                    {(item) => <AutocompleteItem key={item.companyID}>{item.companyName}</AutocompleteItem>}
+                                    {(item) => <AutocompleteItem key={item.companyID} value={item.value} textValue={item.companyName}>{item.companyName}</AutocompleteItem>}
                                 </Autocomplete>
                             </div>
                             <div className="mb-2">
@@ -414,6 +425,7 @@ export default function Page() {
                                     label="Ngày nộp hồ sơ"
 
                                     name="submitDate"
+
                                     value={newApplication.submitDate}
                                     onChange={handleInputChange}
                                     fullWidth
@@ -472,7 +484,7 @@ export default function Page() {
                             <div className="mb-2">
                                 {/* <label className="block text-gray-700">Số điện thoại</label> */}
                                 <Input
-                                    type="Date"
+                                    type="date"
 
                                     label="Ngày hẹn trả "
                                     name="returnDate"
@@ -589,17 +601,16 @@ export default function Page() {
 
                                     <Autocomplete
                                         label="Loại chuyên môn"
-                                        value={newEmployee.licenseType}
-
+                                        value={licenseType}
+                                        defaultInputValue={licenseType}
                                         onInputChange={handleLicenseTypeChange}
                                         name='licenseType'
                                         fullWidth
                                         isRequired
-
                                     >
-                                        {licenseTypes.map((animal) => (
-                                            <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
-                                                {animal.label}
+                                        {licenseTypes.map((type) => (
+                                            <AutocompleteItem key={type.value} value={type.value} >
+                                                {type.label}
                                             </AutocompleteItem>
                                         ))}
                                     </Autocomplete>
@@ -616,7 +627,7 @@ export default function Page() {
                                         isRequired
                                     >
                                         {railwayTypes.map((animal) => (
-                                            <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
+                                            <AutocompleteItem key={animal.value} value={animal.value} >
                                                 {animal.label}
                                             </AutocompleteItem>
                                         ))}
@@ -659,7 +670,7 @@ export default function Page() {
                                 <div className="mb-2">
                                     {/* <label className="block text-gray-700">Số năm làm phụ tàu</label> */}
                                     <Input
-                                        label="Số năm làm phụ tàu"
+                                        label="Số tháng làm phụ tàu"
                                         type="text"
                                         name="experienceMonths"
                                         value={newEmployee.experienceMonths}

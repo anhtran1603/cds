@@ -4,8 +4,6 @@ import { Autocomplete, AutocompleteItem, Button, Modal, ModalBody, ModalContent,
 import { toast } from 'react-toastify';
 
 export default function PhanCongModal (props) {
-
-    console.log("PhanCongModal", props);
     const { isOpen, onOpenChange, users, application , callBack} = props;
 
     const [selectedUser, setSelectedUser] = useState(null);
@@ -15,7 +13,6 @@ export default function PhanCongModal (props) {
 
     const handleUserChange = (value) => {
         var user = users.find(u => u.fullName === value);
-        console.log("user", user);
         setSelectedUser(user);
         // setUserName(value);
     }

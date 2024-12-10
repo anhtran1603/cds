@@ -17,12 +17,20 @@ export default function Page() {
     const [user, setUser] = useState(null);
     const router = useRouter();
     const rowsPerPage = 10;
+    const [trangThai, setTrangThai] = useState('');
+    const [filteredDrivers, setFilteredDrivers] = useState([]);
+
+    useEffect(() => {
+        const filtered = applications.filter(driver =>
+            (searchTerm === "" || driver.applicationID.toLowerCase().includes(searchTerm.toLowerCase())) &&
+            (!trangThai || driver.status.toLowerCase() === trangThai.toLowerCase())
+        );
+        setFilteredDrivers(filtered);
+    }, [searchTerm, trangThai, applications]);
 
     const pages = Math.ceil(applications.length / rowsPerPage);
 
-    const filteredDrivers = applications.filter(driver =>
-        driver.applicationID.toLowerCase().includes(searchTerm.toLowerCase()) 
-    );
+
     const items = useMemo(() => {
         const start = (page - 1) * rowsPerPage;
         const end = start + rowsPerPage;
@@ -159,6 +167,7 @@ export default function Page() {
                     <Autocomplete
                         label="Chọn trạng thái"
                         className="max-w-xs"
+                        onSelectionChange={(value) => setTrangThai(value)}
                     >
                         {status.map((st) => (
                             <AutocompleteItem key={st.value} value={st.value}>

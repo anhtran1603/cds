@@ -17,9 +17,15 @@ export default function Page() {
     const rowsPerPage = 10;
     const pages = Math.ceil(licenses.length / rowsPerPage);
     
-    const filteredDrivers = licenses.filter(driver =>
-        driver.licenseNumber.toLowerCase().includes(searchTerm.toLowerCase() && driver.status.toLowerCase() == trangThai.toLowerCase()) 
-    );
+    const [filteredDrivers, setFilteredDrivers] = useState([]);
+
+    useEffect(() => {
+        const filtered = licenses.filter(driver =>
+            (searchTerm === "" || driver.licenseNumber.toLowerCase().includes(searchTerm.toLowerCase())) &&
+            (!trangThai || driver.status.toLowerCase() === trangThai.toLowerCase())
+        );
+        setFilteredDrivers(filtered);
+    }, [searchTerm, trangThai, licenses]);
 
     const items = useMemo(() => {
         const start = (page - 1) * rowsPerPage;

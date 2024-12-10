@@ -443,7 +443,7 @@ const employeeStatus = [
                             <div className="mb-2">
                                 {/* <label className="block text-gray-700">Số điện thoại</label> */}
                                 <Input
-                                    type="Date"
+                                    type="date"
 
                                     label="Ngày hẹn trả "
                                     name="returnDate"
@@ -630,7 +630,7 @@ const employeeStatus = [
                                 <div className="mb-2">
                                     {/* <label className="block text-gray-700">Số năm làm phụ tàu</label> */}
                                     <Input
-                                        label="Số năm làm phụ tàu"
+                                        label="Số tháng làm phụ tàu"
                                         type="text"
                                         name="experienceMonths"
                                         value={newEmployee.experienceMonths}

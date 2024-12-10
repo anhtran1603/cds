@@ -8,12 +8,15 @@ export default function ReasonModal(props) {
     const [reason, setReason] = useState(null);
 
     const handleReasonChange = (value) => {
-        console.log("value", value);
         setReason(value);
     }
-    console.log("ReasonModal", reason);
+
     const handleAddReason = async () => {
         // Call the onAdd function with the selected user
+        if (!reason) {
+            toast.error("Vui lòng nhập lý do");
+            return;
+        }
         var data = {
             ...application,
             status: status === 'Đang xử lý' ? "Chờ xử lý" : "Đang xử lý",
@@ -25,7 +28,7 @@ export default function ReasonModal(props) {
             callBack();
             onOpenChange(false);
             toast.success("Phản hồi thành công");
-        }else{
+        } else {
             toast.error("Có lỗi xảy ra, vui lòng thử lại sau");
         }
     }
@@ -50,8 +53,8 @@ export default function ReasonModal(props) {
                                 <div className="mb-2">
                                     <label className="block text-gray-700">Nhập lý do</label>
                                     <Textarea
-
-
+                                        errorMessage="Vui lòng nhập lý do"
+                                        isInvalid={!reason}
                                         name="citizenID"
                                         value={reason}
                                         onValueChange={handleReasonChange}
