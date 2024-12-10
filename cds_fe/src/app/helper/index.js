@@ -51,3 +51,10 @@ export const handleDownload = (base64, fileName) => {
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     };
+
+  export  const bufferToBase64 = (buffer) => {
+        return btoa(
+            new Uint8Array(buffer)
+                .reduce((data, byte) => data + String.fromCharCode(byte), '')
+        );
+    };

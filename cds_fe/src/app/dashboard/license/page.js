@@ -1,12 +1,15 @@
 'use client'
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Pagination, Tooltip , AutocompleteItem, Autocomplete } from '@nextui-org/react';
+import { Table, TableHeader,Button , TableColumn, TableBody, TableRow, TableCell, Input, Pagination, Tooltip, AutocompleteItem, Autocomplete } from '@nextui-org/react';
 import { EyeIcon } from "../../button-icon/viewIcon";
 import { SearchIcon } from '../../button-icon/searchIcon';
-import { getLicenses,getEmployee, getLicensesCompleted } from '../../helper/api';
+import { getLicenses, getEmployee, getLicensesCompleted } from '../../helper/api';
 import { useRouter } from 'next/navigation';
-
-
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { faDownload} from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { bufferToBase64 } from '../../helper';
 
 export default function Page() {
     const rourer = useRouter();
@@ -16,7 +19,7 @@ export default function Page() {
     const [page, setPage] = useState(1);
     const rowsPerPage = 10;
     const pages = Math.ceil(licenses.length / rowsPerPage);
-    
+
     const [filteredDrivers, setFilteredDrivers] = useState([]);
 
     useEffect(() => {
@@ -38,15 +41,61 @@ export default function Page() {
         // Fetch the driver data from an API or define it statically
         const getData = async () => {
 
-            const data =  await getLicensesCompleted();
+            const data = await getLicensesCompleted();
+
+            // data.forEach(async (license) => {
+            //     license.employeeName = await getEmployee(license.employeeID)?.fullName;
+            // })
+            // console.log("data", data);
             setLicenses(data);
-        
+
         }
         getData()
         // fetchDrivers();
     }, []);
 
+    // const bufferToBase64 = (buffer) => {
+    //     return btoa(
+    //         new Uint8Array(buffer)
+    //             .reduce((data, byte) => data + String.fromCharCode(byte), '')
+    //     );
+    // };
 
+
+    const exportToPDF = async () => {
+        const doc = new jsPDF();
+
+
+        const response = await fetch("/fonts/NotoSans-Regular.ttf ");
+        const fontData = await response.arrayBuffer();
+
+        // Convert font data to Base64
+        const base64Font = bufferToBase64(fontData);
+
+        // Add the font to jsPDF
+        doc.addFileToVFS("NotoSans-Regular.ttf", base64Font);
+        doc.addFont("NotoSans-Regular.ttf", "NotoSans", "normal");
+    
+        // Đặt font mặc định là NotoSans
+        doc.setFont("NotoSans");
+    
+        // Thêm tiêu đề
+        doc.text('DANH SÁCH GIẤY PHÉP LÁI TÀU', 15, 10);
+        doc.autoTable({
+            head: [['Số giấy phép', 'Họ và tên', 'Ngày hết hạn', 'Trạng thái']],
+            styles: {
+                font: "NotoSans", // Use the custom font
+                fontSize: 13,
+              },
+            body: licenses.map(license => [
+                license.licenseNumber,
+                license?.employee?.fullName,
+                new Date(license.expiryDate).toLocaleDateString(),
+                license.status
+            ]),
+        });
+        doc.save('license.pdf');
+    };
     const columns = [
         { name: "Số giấy phép", uid: "licenseNumber" },
         { name: "Họ và tên", uid: "employeeID" },
@@ -98,7 +147,6 @@ export default function Page() {
         }
     }, [getEmployeeName]);
 
-    
 
     return (
         <div className="container mx-auto p-4">
@@ -116,7 +164,7 @@ export default function Page() {
                         <SearchIcon className="text-black/50 mb-0.5 dark:text-white/90 text-slate-400 pointer-events-none flex-shrink-0" />
                     }
                 />
-                <div className="flex justify-between ml-5 mb-2">
+                <div className="flex justify-between ml-5">
                     <Autocomplete
                         label="Chọn trạng thái"
                         className="max-w-xs"
@@ -130,7 +178,9 @@ export default function Page() {
                     </Autocomplete>
                 </div>
             </div>
-            
+            <div className="flex justify-start">
+                <Button size='lg' className='mb-4 bg-red-400' color='primary' onClick={exportToPDF}> <FontAwesomeIcon icon={faDownload} />Export to PDF</Button>
+            </div>
             <Table aria-label=""
                 bottomContent={
                     <div className="flex w-full justify-center">
@@ -146,7 +196,7 @@ export default function Page() {
                     </div>
                 }
                 sortDescriptor={{ key: "licenseNumber", direction: "desc" }}
-                >
+            >
                 <TableHeader columns={columns}>
                     {(column) => (
                         <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
@@ -161,7 +211,7 @@ export default function Page() {
                         </TableRow>
                     )}
                 </TableBody>
-            </Table>               
+            </Table>
         </div>
     );
 }

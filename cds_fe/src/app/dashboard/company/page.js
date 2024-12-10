@@ -1,10 +1,14 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Pagination, Modal, ModalContent,  ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Pagination, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
 
 import { getCompanies, addCompany } from '../../helper/api';
 import { SearchIcon } from '../../button-icon/searchIcon';
-
+import { faDownload, faEye, faPlus, faUpload } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { bufferToBase64 } from '../../helper';
 export default function Page() {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [companies, setCompanies] = useState([]);
@@ -71,6 +75,41 @@ export default function Page() {
         return filteredCompanies.slice(start, end);
     }, [page, filteredCompanies]);
 
+    const exportToPDF = async () => {
+        const doc = new jsPDF();
+
+
+        const response = await fetch("/fonts/NotoSans-Regular.ttf ");
+        const fontData = await response.arrayBuffer();
+
+        // Convert font data to Base64
+        const base64Font = bufferToBase64(fontData);
+
+        // Add the font to jsPDF
+        doc.addFileToVFS("NotoSans-Regular.ttf", base64Font);
+        doc.addFont("NotoSans-Regular.ttf", "NotoSans", "normal");
+    
+        // Đặt font mặc định là NotoSans
+        doc.setFont("NotoSans");
+    
+        // Thêm tiêu đề
+        doc.text('DANH SÁCH DOANH NGHIỆP', 15, 10);
+        doc.autoTable({
+            head: [['Tên doanh nghiệp', 'Mã số thuế', 'Email', 'Số điện thoại']],
+            styles: {
+                font: "NotoSans", // Use the custom font
+                fontSize: 13,
+              },
+            body: items.map(item => [
+                item.companyName,
+                item.taxCode,
+                item.email,
+                item.phoneNumber
+            ]),
+        });
+        doc.save('company.pdf');
+    };
+
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">Danh sách doanh nghiệp</h1>
@@ -80,7 +119,7 @@ export default function Page() {
                     label="Tìm kiếm"
                     isClearable
                     radius="lg"
-                    
+
                     placeholder="Nhập từ khóa để tìm kiếm..."
 
                     startContent={
@@ -91,8 +130,9 @@ export default function Page() {
                 />
 
             </div>
-            
-            <Button size='lg' className='mb-4' color='primary' onClick={onOpen}>Thêm mới</Button>
+
+            <Button size='lg' className='mb-4' color='primary' onClick={onOpen}> <FontAwesomeIcon icon={faPlus} /> Thêm mới</Button> 
+            <Button size='lg' className='mb-4 ml-3 bg-red-400' color='primary' onClick={exportToPDF}> <FontAwesomeIcon icon={faDownload} />Export to PDF</Button>
             <Modal
                 backdrop="opaque"
                 isOpen={isOpen}
