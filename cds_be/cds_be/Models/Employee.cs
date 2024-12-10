@@ -45,5 +45,6 @@ namespace cds_be.Models
         public string? HealthCertificate { get; set; }
         public string? HealthCertificateContent { get; set; }
         public string? RailwayType { get; set; }
+        public string? Status { get; set; }
     }
 }

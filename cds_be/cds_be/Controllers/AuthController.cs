@@ -36,7 +36,8 @@ namespace cds_be.Controllers
                 {
                     username = user.UserName,
                     fullname = user.FullName,
-                    roleId = user.RoleID
+                    roleId = user.RoleID,
+                    userId = user.UserID
                 }
                
             };

@@ -78,7 +78,7 @@ namespace cds_be.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteApplication(int id)
+        public async Task<IActionResult> DeleteApplication(string id)
         {
             var application = await _context.Applications.FindAsync(id);
             if (application == null)

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo, React, useCallback } from 'react';
+import { useState, useEffect, useMemo, React, useCallback, use } from 'react';
 
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Pagination, Tooltip, Input, Button, Autocomplete, AutocompleteItem } from "@nextui-org/react";
 import { EditIcon } from "../../button-icon/editIcon";
@@ -7,8 +7,8 @@ import { DeleteIcon } from "../../button-icon/deleteIcon";
 import { EyeIcon } from "../../button-icon/viewIcon";
 import { SearchIcon } from '../../button-icon/searchIcon';
 import { useRouter } from 'next/navigation';
-import { getApplications, getCompany } from '../../helper/api';
-
+import { getApplications, getCompany, deleteApplication, getApplication, getEmployees, getLicenses, deleteEmployee, deleteLicense } from '../../helper/api';
+import { toast } from 'react-toastify';
 export default function Page() {
     const [applications, setApplications] = useState([]);
     const [page, setPage] = useState(1);
@@ -18,13 +18,15 @@ export default function Page() {
     const rowsPerPage = 10;
 
     const pages = Math.ceil(applications.length / rowsPerPage);
-
+    const filteredDrivers = applications.filter(driver =>
+        driver.applicationID.toLowerCase().includes(searchTerm.toLowerCase()) 
+    );
     const items = useMemo(() => {
         const start = (page - 1) * rowsPerPage;
         const end = start + rowsPerPage;
 
-        return applications.slice(start, end);
-    }, [page, applications]);
+        return filteredDrivers.slice(start, end);
+    }, [page, filteredDrivers]);
 
     var status = [ // Example data for Autocomplete
         { label: "Chờ xử lý", value: "Chờ sử lý" },
@@ -53,20 +55,42 @@ export default function Page() {
         }
     }
 
+    var getData = useCallback(async () => {
+        const data = await getApplications();
+        setApplications(data.filter((app) => app.applicationType === "Cấp mới"));
 
+    }, []);
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem("user"));
         // console.log(user);
         setUser(user);
-        // Fetch the company data from an API or define it statically
-        var getData = async () => {
-            var data = await getApplications();
-            setApplications(data.filter((app) => app.applicationType === "Cấp mới"));
-        }
-
         getData();
-    }, [getApplications]);
+    }, [getData]);
+
+
+    const handleDelete = async (id) => {
+        try {
+            //get employee
+            var employees = await getEmployees();
+            var employee = employees.find(e => e.applicationID === id);
+            console.log("employee", employee, employees);
+            if (employee) {
+                //delete employee
+                await deleteEmployee(employee.employeeID);
+            }
+            const data = await deleteApplication(id);
+            console.log("data", data);
+            if (data) {
+                toast.success("Xóa hồ sơ thành công");
+                setApplications(applications.filter((app) => app.applicationID !== id));
+            } else {
+                toast.error("Có lỗi xảy ra, vui lòng thử lại sau");
+            }
+        } catch (error) {
+            console.error("error", error);
+        }
+    }
 
     const renderCell = useCallback((application, columnKey) => {
         const cellValue = application[columnKey];
@@ -87,16 +111,16 @@ export default function Page() {
                             </span>
                         </Tooltip>
                         {
-                            application.status === "Chờ xử lý" && user.roleId == '1' &&(
+                            application.status === "Chờ xử lý" && user.roleId == '1' && (
                                 <>
-                                    <Tooltip content="Chỉnh sửa">
+                                    {/* <Tooltip content="Chỉnh sửa">
                                         <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
                                             <EditIcon />
                                         </span>
-                                    </Tooltip>
+                                    </Tooltip> */}
                                     <Tooltip color="danger" content="Xóa">
                                         <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                                            <DeleteIcon />
+                                            <DeleteIcon onClick={() => handleDelete(maHS)} />
                                         </span>
                                     </Tooltip>
                                 </>

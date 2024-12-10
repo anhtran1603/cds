@@ -4,7 +4,7 @@ import { Input, Button } from '@nextui-org/react';
 
 export default function UploadForm(props) {
 
-    const {name , setName, setBase64Content} = props;
+    const {name , setName, setBase64Content, fileName} = props;
 
     // const [file, setFile] = useState(null);
     const [base64, setBase64] = useState('');
@@ -63,8 +63,9 @@ export default function UploadForm(props) {
                 <div className="mb-4">
                 
                     <Input
-                        label="Chọn file"
+                        size='large'
                         type="file"
+                        defaultValue={fileName}
                         name={name}
                         onChange={handleFileChange}
                         fullWidth

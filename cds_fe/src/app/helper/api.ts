@@ -193,7 +193,7 @@ export async function deleteApplication(id: string) {
         throw new Error(errorData.message || 'Failed to fetch data');
     }
 
-    return res.json();
+    return res;
 }
 
 export async function addEmployee(data: any) {
@@ -232,7 +232,7 @@ export async function getEmployees() {
     return res.json();
 }
 
-export async function getEmployee(id: string) {
+export async function getEmployee(id) {
     const res = await fetch(API_URL + `/employee/${id}`, {
         method: 'GET',
         headers: {
@@ -281,7 +281,7 @@ export async function deleteEmployee(id: string) {
         throw new Error(errorData.message || 'Failed to fetch data');
     }
 
-    return res.json();
+    return res;
 }
 
 export async function getLicenses() {

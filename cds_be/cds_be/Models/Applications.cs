@@ -43,5 +43,9 @@ namespace cds_be.Models
         public string? ReasonRejection { get; set; }
         public DateTime? ReturnDate { get; set; }
         public int? Duration { get; set; }
+        public string? ExaminationPlan { get; set; }
+        public string? ExaminationPlanContent { get; set; }
+        public string? Result { get; set; }
+        public string? ResultContent { get; set; }
     }
 }

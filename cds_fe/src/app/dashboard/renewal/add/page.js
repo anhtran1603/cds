@@ -57,7 +57,8 @@ export default function Page() {
         personalStatementContent: '',
         healthCertificate: "",
         healthCertificateContent: "",
-        railwayType: ''
+        railwayType: '',
+        status: 'Đang công tác'
     });
 
     const handleEmployeeInputChange = (e) => {
@@ -145,6 +146,12 @@ export default function Page() {
 
     }, [getCompanies]);
 
+const employeeStatus = [
+    { label: "Đang công tác", value: "Đang công tác" },
+    { label: "Đã nghỉ việc", value: "Đã nghỉ việc" }
+];
+
+
     const licenseTypes = [   // Example data for Autocomplete
         { label: "Đầu máy diesel", value: "Đầu máy diesel" },
         { label: "Đầu máy điện", value: "Đầu máy điện" },
@@ -168,13 +175,14 @@ export default function Page() {
                 applicationID: maHS,
                 applicationType: 'Cấp lại',
                 status: 'Chờ xử lý',
-                submitDate: new Date().toISOString(),
-                returnDate: new Date().toISOString(),
+                submitDate: new Date(newApplication.submitDate),
+                returnDate: new Date(newApplication.returnDate),
                 appraiser: 0,
             }
-            console.log(data);
+     
             var rs = await addApplication(data);
             if (rs) {
+          
                 if (newEmployee) {   // Add employees to the application
                     // employees.forEach(async (employee) => {
                     var employeeData = {
@@ -182,13 +190,14 @@ export default function Page() {
                         id: 0,
                         applicationID: maHS,
                         companyID: newApplication.companyID,
+                        birthDate: newEmployee.dateOfBirth,
                     }
                     await addEmployee(employeeData);
                     // });
                 }
 
                 toast.success('Thêm hồ sơ thành công');
-                router.push('/dashboard/new');
+                router.push('/dashboard/renewal');
                 // Reset the form
                 setNewApplication({
                     applicationID: '',
@@ -219,7 +228,8 @@ export default function Page() {
                     personalStatementContent: '',
                     healthCertificate: "",
                     healthCertificateContent: "",
-                    railwayType: ''
+                    railwayType: '',
+                    status: 'Đang công tác'
                 });
             } else {
                 toast.error('Thêm hồ sơ thất bại');
@@ -299,7 +309,7 @@ export default function Page() {
     return (
         <div className="container mx-auto p-4">
             < div className="flex items-center justify-between ">
-                <h1 className="text-2xl font-bold mb-4">Thêm mới hồ sơ</h1>
+                <h1 className="text-2xl font-bold mb-4">Thêm mới hồ sơ cấp lại</h1>
                 <Button onClick={handleAddApplication} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
                     Lưu hồ sơ
                 </Button>
@@ -433,7 +443,7 @@ export default function Page() {
                             <div className="mb-2">
                                 {/* <label className="block text-gray-700">Số điện thoại</label> */}
                                 <Input
-                                    type="Date"
+                                    type="date"
 
                                     label="Ngày hẹn trả "
                                     name="returnDate"
@@ -443,6 +453,7 @@ export default function Page() {
                                     required
                                 />
                             </div>
+                            
                         </div>
                     </AccordionItem>
                     <AccordionItem
@@ -452,7 +463,7 @@ export default function Page() {
                     >
                         <div className="grid grid-cols-2 gap-4">
                             <div className="mb-2">
-                                <label className="block text-gray-700">Đơn đề nghị</label>
+                                <label className="block text-gray-700">Đơn đề nghị cấp lại</label>
                                 {/*<Input
                                     type="file"
                                     name="applicationFile"
@@ -463,7 +474,7 @@ export default function Page() {
                                 <UploadFile name="applicationFile" setName={setApplicationFile} setBase64Content={setApplicationFileContent} />
                             </div>
                             <div className="mb-2">
-                                <label className="block text-gray-700">Văn bản chứng nhận</label>
+                                <label className="block text-gray-700">Tài liệu liên quan đến giấy phép cũ</label>
                                 {/* <Input
                                     type="file"
                                     name="certificationDocument"
@@ -641,7 +652,7 @@ export default function Page() {
                                         required
                                     />
                                 </div>
-                                <div className="mb-2">
+                                <div className="">
                                     <label className="block text-gray-700">Bản khai cá nhân</label>
                                     {/* <Input
 
@@ -653,7 +664,7 @@ export default function Page() {
                                             /> */}
                                     <UploadFile name="personalStatement" setName={setPersonalStatement} setBase64Content={setPersonalStatementContent} />
                                 </div>
-                                <div className="mb-2">
+                                <div className="">
                                     <label className="block text-gray-700">Giây khám sức khỏe</label>
                                     {/* <Input
                                                 type="file"
@@ -663,6 +674,24 @@ export default function Page() {
                                                 required
                                             /> */}
                                     <UploadFile name="healthCertificate" setName={setHealthCertificate} setBase64Content={setHealthCertificateContent} />
+                                </div>
+                                <div className="mb-2">
+                                    {/* <label className="block text-gray-700">Loại tuyến đường sắt</label> */}
+                                    <Autocomplete
+                                        label="Tình trạng công tác"
+                                        value={newEmployee.status}
+                                        onInputChange={handleRailwayTypeChange}
+                                        defaultSelectedKey={"Đang công tác"}
+                                        name='status'
+                                        fullWidth
+                                        
+                                    >
+                                        {employeeStatus.map((animal) => (
+                                            <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
+                                                {animal.label}
+                                            </AutocompleteItem>
+                                        ))}
+                                    </Autocomplete>
                                 </div>
                             </div>
                             {/* <Button onClick={onOpen} className="bg-green-500 text-white mb-3 px-4 py-2 rounded hover:bg-green-700">

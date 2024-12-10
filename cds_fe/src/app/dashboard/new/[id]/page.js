@@ -1,15 +1,16 @@
 'use client'
 import { use, useEffect, useState, useCallback } from 'react';
 import { Input, Accordion, AccordionItem, Textarea, DateInput, DatePicker, Autocomplete, AutocompleteItem, Image, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, user } from '@nextui-org/react';
-import { faEye, faUpload } from "@fortawesome/free-solid-svg-icons"
+import { faDownload, faEye, faUpload } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { CalendarDate, parseDate, parseAbsoluteToLocal, CalendarDateTime } from "@internationalized/date";
-import { getEmployees, getApplications, getLicenses, updateApplication, getApplication, getCompanies, getUserByRole } from '../../../helper/api';
+import { getEmployees, getApplications, getLicenses, updateApplication, getApplication, getCompanies, getUserByRole, addLicense } from '../../../helper/api';
 import { useRouter, useParams } from "next/navigation";
 import PhanCongModal from "../../../components/PhanCongModal";
 import ReasonModal from "../../../components/ReasonModal";
 import { toast } from 'react-toastify';
 import UploadFile from '../../../components/uploadFile';
+import { handleDownload } from '../../../helper'
 // import { getApplications, getLicenses } from '../../../helper/api';
 
 export default function Page() {
@@ -33,19 +34,39 @@ export default function Page() {
         Duration: "",
         appraiser: '',
         appraiserName: '',
-        reasonRejection: ''
+        reasonRejection: '',
+        status: '',
+        examinationPlan: '',
+        examinationPlanContent: '',
+        result: '',
+        resultContent: '',
     });
-    const [employees, setEmployees] = useState([]);
-    const [licenses, setLicenses] = useState([]);
+
     const [user, setUser] = useState(null);
     const [companies, setCompanies] = useState([]);
     const [sunmitDate, setSubmitDate] = useState(null);
     const [companyId, setCompanyId] = useState('1');
     const [isPhanCong, setIsPhanCong] = useState(false);
     const [users, setUsers] = useState([]);
-    const [closeModal, setCloseModal] = useState(false);
     const [isReason, setIsReason] = useState(false);
     const [companyName, setCompanyName] = useState('');
+    const [examinationPlan, setExaminationPlan] = useState(null);
+    const [examinationPlanContent, setExaminationPlanContent] = useState(null);
+    const [result, setResult] = useState(null);
+
+    const [resultContent, setResultContent] = useState(null);
+
+
+    const [newLicense, setNewLicense] = useState({
+        licenseNumber: '',
+        employeeID: '',
+        issueDate: '',
+        expiryDate: '',
+        issuingAuthority: '',
+        signedBy: '',
+        status: '',
+    });
+
 
     useEffect(() => {
 
@@ -81,22 +102,25 @@ export default function Page() {
     const getAppliaction = useCallback(async () => {
 
         var data = await getApplication(id);
+
         setCompanyId(data.companyID.toString());
         setNewApplication(data);
         //get employee
         var dataEmployees = await getEmployees();
         // // console.log("employees", dataEmployees);
 
-        var employee = dataEmployees.find(employee => employee.applicationID === id);
+        var employee = dataEmployees.find(employee => employee?.applicationID === id);
         setNewEmployee(employee);
         // var employeeIDs = employees.map(employee => employee.employeeID);
 
         // setEmployees(employees);
         // //get license
-        // var dateLicenses = await getLicenses();
+        if (employee) {
+            var dataLicenses = await getLicenses();
+            var license = dataLicenses.find(license => employee?.employeeID == license.employeeID);
+            setNewLicense(license);
+        }
 
-        // var licenses = dateLicenses.filter(license => employeeIDs.include(license.employeeID));
-        // setLicenses(licenses);
     }, [id]);
 
 
@@ -107,6 +131,8 @@ export default function Page() {
         setUser(user);
         getAppliaction();
     }, [getAppliaction]);
+
+
 
     const [newEmployee, setNewEmployee] = useState({
         avatar: null,
@@ -167,6 +193,7 @@ export default function Page() {
         setNewApplication({ ...newApplication, [name]: files[0] });
     };
 
+
     const handleEmployeeChange = (index, e) => {
         const { name, value } = e.target;
         const updatedEmployees = [...newApplication.employees];
@@ -221,7 +248,7 @@ export default function Page() {
     const handleAddApplication = (e) => {
         e.preventDefault();
         // Handle the form submission logic here
-        console.log('New Application:', newApplication);
+
         // Reset the form
         setNewApplication({
             applicationID: '',
@@ -240,6 +267,14 @@ export default function Page() {
 
     const handlePhanCong = () => {
         setIsPhanCong(true);
+    }
+
+    function formatDate(date) {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
     const handleGuiThamDinh = async () => {
@@ -297,11 +332,27 @@ export default function Page() {
         var data = {
             ...newApplication,
             status: "Đã hoàn thành",
-            reasonRejection: ""
+            reasonRejection: "",
+            examinationPlan: examinationPlan,
+            result: result,
+            examinationPlanContent: examinationPlanContent,
+            resultContent: resultContent
         }
         var rs = await updateApplication(newApplication.applicationID, data);
 
-        if (rs) {
+        //lưu giấy phép
+        var license = {
+            ...newLicense,
+            employeeID: newEmployee.employeeID,
+            issueDate: new Date(newLicense.issueDate).toISOString(),
+            expiryDate: new Date(newLicense.expiryDate).toISOString(),
+            status: "Hiệu lực"
+        }
+
+        var res = await addLicense(license);
+
+
+        if (rs && res) {
             getAppliaction();
             onOpenChange(false);
             toast.success("Duyệt thành công");
@@ -309,13 +360,18 @@ export default function Page() {
             toast.error("Có lỗi xảy ra, vui lòng thử lại sau");
         }
     }
+
+    const handleLicenseChange = (e) => {
+        const { name, value } = e.target;
+        setNewLicense({ ...newLicense, [name]: value });
+    };
     const renderButton = (status) => {
 
         if (status === "Chờ xử lý" && user?.roleId === 1) {
 
             return (
                 <>
-                    <Button type="submit" onClick={() => { }} className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <Button type="submit" onClick={() => router.push(`/dashboard/new/${id}/edit`)} className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-700">
                         Chỉnh sửa hồ sơ
                     </Button>
                     {
@@ -332,7 +388,7 @@ export default function Page() {
             )
         }
 
-        if (status === "Đang xử lý" && user?.roleId === 2) {
+        if (status === "Đang xử lý" && user?.roleId === 2 && newApplication.appraiser == user?.userId) {
 
             return (
                 <>
@@ -359,7 +415,7 @@ export default function Page() {
             )
         }
 
-        if (status === "Đã duyệt" && user?.roleId === 2) {
+        if (status === "Đã duyệt" && user?.roleId === 2 && newApplication.appraiser == user?.userId) {
 
             return (
                 <Button type="submit" onClick={handleDuyet} className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-700">
@@ -423,7 +479,7 @@ export default function Page() {
                                     // onChange={handleInputChange}
                                     fullWidth
                                     isRequired
-                                    isDisabled
+                                    isReadOnly
                                 />
                             </div>
                             <div className="mb-2">
@@ -435,7 +491,7 @@ export default function Page() {
                                     selectedKey={companyId}
                                     fullWidth
                                     isRequired
-                                    isDisabled
+                                    isReadOnly
                                 >
                                     {companies.map((com) => (
                                         <AutocompleteItem key={com.companyID} value={com.companyName}>
@@ -465,7 +521,7 @@ export default function Page() {
                                     onChange={handleInputChange}
                                     fullWidth
                                     isRequired
-                                    isDisabled
+                                    isReadOnly
                                 />
                             </div>
                             <div className="mb-2">
@@ -479,7 +535,7 @@ export default function Page() {
                                     onChange={handleInputChange}
                                     fullWidth
                                     required
-                                    isDisabled
+                                    isReadOnly
                                 />
                             </div>
                             <div className="mb-2">
@@ -496,11 +552,12 @@ export default function Page() {
                                     required
                                     disabled
                                 /> */}
-                                <DateInput
+                                <Input readonly
+                                    type="text"
                                     label={"Ngày nộp hồ sơ"}
-                                    isDisabled
+                                    isReadOnly
                                     // defaultValue={new CalendarDate(newApplication.submitDate)}
-                                    value={sunmitDate}
+                                    value={new Date(newApplication?.submitDate).toLocaleDateString()}
                                     placeholderValue={new CalendarDate(1995, 11, 6)}
                                 />
                                 {/* <DatePicker
@@ -512,7 +569,7 @@ export default function Page() {
                                     label="Ngày nộp hồ sơ"
                                     variant="bordered"
                                     fullWidth
-                                    isDisabled
+                                    isReadOnly
 
                                 /> */}
                             </div>
@@ -525,7 +582,7 @@ export default function Page() {
                                 onChange={handleInputChange}
                                 fullWidth
                                 required
-                                isDisabled
+                                isReadOnly
                             />
 
                             <div className="mb-2">
@@ -533,7 +590,7 @@ export default function Page() {
                                 <Input readonly
                                     type="email"
                                     label="Email"
-                                    isDisabled
+                                    isReadOnly
                                     name="email"
                                     value={newApplication.email}
                                     onChange={handleInputChange}
@@ -552,10 +609,22 @@ export default function Page() {
                                     onChange={handleInputChange}
                                     fullWidth
                                     required
-                                    isDisabled
+                                    isReadOnly
                                 />
                             </div>
+                            <div className="mb-2">
+                                {/* <label className="block text-gray-700">Số điện thoại</label> */}
+                                <Input
+                                    type="text"
 
+                                    label="Ngày hẹn trả "
+                                    name="returnDate"
+                                    value={new Date(newApplication?.returnDate).toLocaleDateString()}
+                                    onChange={handleInputChange}
+                                    fullWidth
+                                    required
+                                />
+                            </div>       
                         </div>
                     </AccordionItem>
                     <AccordionItem
@@ -574,7 +643,8 @@ export default function Page() {
                                     value={newApplication.applicationFile}
                                     fullWidth
                                     required
-                                    isDisabled
+                                    isReadOnly
+                                    endContent={<FontAwesomeIcon icon={faDownload} onClick={() => handleDownload(newApplication.applicationFileContent, newApplication.applicationFile)} className="cursor-pointer" />}
                                 />
                             </div>
                             <div className="mb-2">
@@ -588,7 +658,8 @@ export default function Page() {
                                     value={newApplication.certificationDocument}
                                     fullWidth
                                     required
-                                    isDisabled
+                                    isReadOnly
+                                    endContent={<FontAwesomeIcon icon={faDownload} onClick={() => handleDownload(newApplication.certificationDocumentContent, newApplication.certificationDocument)} className="cursor-pointer" />}
                                 />
                             </div>
                         </div>
@@ -598,7 +669,7 @@ export default function Page() {
                                 <Image
                                     isBlurred
                                     width={256}
-                                    src={newEmployee.avatar ? newEmployee.avatar : "/assets/noimage.jpg"}
+                                    src={newEmployee?.avatar ? newEmployee.avatar : "/assets/noimage.jpg"}
                                     alt="avatar"
 
                                 />
@@ -609,7 +680,7 @@ export default function Page() {
                                     fullWidth
                                     required
                                     className='mt-2 w-64'
-                                    isDisabled
+                                    isReadOnly
                                 /> */}
                                 {/* <button className="bg-green-400 mt-5 text-white px-4 py-2 rounded hover:bg-green-700"> <FontAwesomeIcon icon={faUpload} /> Chọn ảnh </button> */}
                             </div>
@@ -621,11 +692,11 @@ export default function Page() {
                                         label="Mã số cá nhân"
                                         type="text"
                                         name="citizenID"
-                                        value={newEmployee.citizenID}
+                                        value={newEmployee?.citizenID}
                                         onChange={handleEmployeeInputChange}
                                         fullWidth
                                         required
-                                        isDisabled
+                                        isReadOnly
                                     />
                                 </div>
                                 <div className="mb-2">
@@ -634,24 +705,24 @@ export default function Page() {
                                         label="Họ và tên"
                                         type="text"
                                         name="fullName"
-                                        value={newEmployee.fullName}
+                                        value={newEmployee?.fullName}
                                         onChange={handleEmployeeInputChange}
                                         fullWidth
                                         required
-                                        isDisabled
+                                        isReadOnly
                                     />
                                 </div>
                                 <div className="mb-2">
                                     {/* <label className="block text-gray-700">Ngày sinhh</label> */}
                                     <Input
                                         label="Ngày sinh"
-                                        type="date"
+                                        type="text"
                                         name="dateOfBirth"
-                                        value={newEmployee.dateOfBirth}
+                                        value={new Date(newEmployee?.dateOfBirth).toLocaleDateString()}
                                         onChange={handleEmployeeInputChange}
                                         fullWidth
                                         required
-                                        isDisabled
+                                        isReadOnly
                                     />
                                 </div>
                                 <div className="mb-2">
@@ -660,11 +731,11 @@ export default function Page() {
                                         label="Số điện thoại"
                                         type="text"
                                         name="phoneNumber"
-                                        value={newEmployee.phoneNumber}
+                                        value={newEmployee?.phoneNumber}
                                         onChange={handleEmployeeInputChange}
                                         fullWidth
                                         required
-                                        isDisabled
+                                        isReadOnly
                                     />
                                 </div>
                                 <div className="mb-2">
@@ -678,10 +749,10 @@ export default function Page() {
                                         name='licenseType'
                                         fullWidth
                                         isRequired
-                                        isDisabled
+                                        isReadOnly
 
                                     > */}
-                                        {/* {licenseTypes.map((animal) => (
+                                    {/* {licenseTypes.map((animal) => (
                                             <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
                                                 {animal.label}
                                             </AutocompleteItem>
@@ -691,11 +762,11 @@ export default function Page() {
                                         label="Loại chuyên môn"
                                         type="text"
                                         name="licenseType"
-                                        value={newEmployee.licenseType}
+                                        value={newEmployee?.licenseType}
                                         // onChange={handleEmployeeInputChange}
                                         fullWidth
                                         required
-                                        isDisabled
+                                        isReadOnly
                                     />
                                 </div>
                                 <div className="mb-2">
@@ -708,7 +779,7 @@ export default function Page() {
                                         name='railwayType'
                                         fullWidth
                                         isRequired
-                                        isDisabled
+                                        isReadOnly
                                     > */}
                                     {/* {railwayTypes.map((animal) => (
                                             <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
@@ -721,11 +792,11 @@ export default function Page() {
                                         label="Loại tuyến đường sắt"
                                         type="text"
                                         name="RailwayType"
-                                        value={newEmployee.railwayType}
+                                        value={newEmployee?.railwayType}
                                         // onChange={handleEmployeeInputChange}
                                         fullWidth
                                         required
-                                        isDisabled
+                                        isReadOnly
                                     />
                                 </div>
                                 <div className="mb-2">
@@ -738,7 +809,7 @@ export default function Page() {
                                         onChange={handleEmployeeInputChange}
                                         fullWidth
                                         required
-                                        isDisabled
+                                        isReadOnly
                                     />
 
                                 </div>
@@ -748,24 +819,24 @@ export default function Page() {
                                         label="Trình độ"
                                         type="text"
                                         name="trainingLevel"
-                                        value={newEmployee.trainingLevel}
+                                        value={newEmployee?.trainingLevel}
                                         onChange={handleEmployeeInputChange}
                                         fullWidth
                                         required
-                                        isDisabled
+                                        isReadOnly
                                     />
                                 </div>
                                 <div className="mb-2">
                                     {/* <label className="block text-gray-700">Số năm làm phụ tàu</label> */}
                                     <Input
-                                        label="Số năm làm phụ tàu"
+                                        label="Số tháng làm phụ tàu"
                                         type="text"
                                         name="experienceMonths"
-                                        value={newEmployee.experienceMonths}
+                                        value={newEmployee?.experienceMonths}
                                         onChange={handleEmployeeInputChange}
                                         fullWidth
                                         required
-                                        isDisabled
+                                        isReadOnly
                                     />
                                 </div>
                                 <div className="mb-2">
@@ -774,11 +845,11 @@ export default function Page() {
                                         label="Phương tiện sát hạch"
                                         type="text"
                                         name="testVehicleCode"
-                                        value={newEmployee.testVehicleCode}
+                                        value={newEmployee?.testVehicleCode}
                                         onChange={handleEmployeeInputChange}
                                         fullWidth
                                         required
-                                        isDisabled
+                                        isReadOnly
                                     />
                                 </div>
                                 <div className="mb-2">
@@ -788,10 +859,12 @@ export default function Page() {
                                         type="text"
                                         name={'personalStatement'}
                                         // onChange={handleEmployeeFileChange}
-                                        value={newEmployee.personalStatement}
+                                        value={newEmployee?.personalStatement}
                                         fullWidth
                                         required
-                                        isDisabled
+                                        isReadOnly
+                                        endContent={<FontAwesomeIcon icon={faDownload} onClick={() => handleDownload(newApplication.personalStatement, newApplication.personalStatementContent)} className="cursor-pointer" />}
+
                                     />
                                     {/* <UploadFile name="personalStatement" setName={setPersonalStatement} setBase64Content={setPersonalStatementContent} /> */}
                                 </div>
@@ -802,10 +875,25 @@ export default function Page() {
                                         type="text"
                                         name="healthCertificate"
                                         // onChange={handleEmployeeFileChange}
-                                        value={newEmployee.healthCertificate}
+                                        value={newEmployee?.healthCertificate}
                                         fullWidth
                                         required
-                                        isDisabled
+                                        isReadOnly
+                                        endContent={<FontAwesomeIcon icon={faDownload} onClick={() => handleDownload(newApplication.healthCertificateContent, newApplication.healthCertificate)} className="cursor-pointer" />}
+                                    />
+                                    {/* <UploadFile name="healthCertificate" setName={setHealthCertificate} setBase64Content={setHealthCertificateContent} /> */}
+                                </div>
+                                <div className="mb-2">
+                                    {/* <label className="block text-gray-700">Giây khám sức khỏe</label> */}
+                                    <Input
+                                        label="Tình trạng công tác"
+                                        type="text"
+                                        name="status"
+                                        // onChange={handleEmployeeFileChange}
+                                        value={newEmployee?.status}
+                                        fullWidth
+                                        required
+                                        isReadOnly
                                     />
                                     {/* <UploadFile name="healthCertificate" setName={setHealthCertificate} setBase64Content={setHealthCertificateContent} /> */}
                                 </div>
@@ -842,6 +930,159 @@ export default function Page() {
                         </div>
                     </AccordionItem>
                 </Accordion>
+                {
+                    (newApplication.status === "Đã duyệt" || newApplication.status === "Đã hoàn thành") &&
+                    <div>
+                        <div className="m-2">
+
+                            <h3 className="text-xl font-bold mb-2">Thông tin sát hạch</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="mb-2">
+                                    {/* <label className="block text-gray-700">Thông báo sát hạch</label> */}
+
+                                    {
+
+                                        newApplication.status === "Đã duyệt" ?
+                                            <>
+                                                <label className="block text-gray-700">Thông báo sát hạch</label>
+                                                <UploadFile name='examinationPlan' setName={setExaminationPlan} setBase64Content={setExaminationPlanContent} />
+
+                                            </> :
+                                            <Input
+                                                label="Thông báo sát hạch"
+                                                type="text"
+                                                name="examinationPlan"
+                                                // onChange={handleEmployeeFileChange}
+                                                value={newApplication.examinationPlan}
+                                                fullWidth
+                                                required
+                                                isReadOnly
+                                                endContent={<FontAwesomeIcon icon={faDownload} onClick={() => handleDownload(newApplication.examinationPlanContent, newApplication.examinationPlan)} className="cursor-pointer" />}
+                                            />
+
+                                    }
+
+                                    {/*  */}
+
+                                </div>
+                                <div className="mb-2">
+                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                    {/* <label className="block text-gray-700">Thông báo sát hạch</label> */}
+                                    {
+
+                                        newApplication.status === "Đã duyệt" ?
+                                            <>
+                                                <label className="block text-gray-700">Kết quả sát hạch</label>
+                                                <UploadFile name='result' setName={setResult} setBase64Content={setResultContent} />
+                                            </> :
+                                            <Input
+                                                label="Kết quả sát hạch"
+                                                type="text"
+                                                name="result"
+                                                // onChange={handleEmployeeFileChange}
+                                                value={newApplication.result}
+                                                fullWidth
+                                                required
+                                                isReadOnly
+                                                endContent={<FontAwesomeIcon icon={faDownload} onClick={() => handleDownload(newApplication.resultContent, newApplication.result)} className="cursor-pointer" />}
+                                            />
+                                    }
+
+                                    {/* <UploadFile name='result' setName={setResult} setBase64Content={setResultContent} /> */}
+
+                                </div>
+                            </div>
+                        </div>
+                        <div className="m-2">
+                            <h3 className="text-xl font-bold mb-2">Thông tin giấy phép</h3>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="mb-2">
+                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                    <Input
+                                        label="Số giấy phép"
+                                        type="text"
+                                        name="licenseNumber"
+                                        onChange={handleLicenseChange}
+                                        value={newLicense?.licenseNumber}
+                                        fullWidth
+                                        isRequired
+                                        isReadOnly={newApplication.status === "Đã hoàn thành"}
+                                    />
+                                </div>
+                                <div className="mb-2">
+                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                    {
+                                        newApplication.status === "Đã duyệt" ? <Input
+                                            label="Ngày cấp"
+                                            type="date"
+                                            name="issueDate"
+                                            onChange={handleLicenseChange}
+                                            fullWidth
+                                            required
+                                        /> : <Input readonly
+                                            label="Ngày cấp"
+                                            type="text"
+                                            name="issueDate"
+                                            value={new Date(newLicense?.issueDate).toLocaleDateString()}
+
+                                            fullWidth
+                                            isReadOnly
+                                        />
+                                    }
+
+                                </div>
+                                <div className="mb-2">
+                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                    {
+                                        newApplication.status === "Đã duyệt" ? <Input
+                                            label="Ngày hết hạn"
+                                            type="date"
+                                            name="expiryDate"
+                                            onChange={handleLicenseChange}
+                                            fullWidth
+                                            required
+
+                                        /> : <Input readonly
+                                            label="Ngày hết hạn"
+                                            type="text"
+                                            name="expiryDate"
+                                            value={new Date(newLicense?.issueDate).toLocaleDateString()}
+                                            fullWidth
+                                            isReadOnly
+                                        />
+                                    }
+
+
+                                </div>
+                                <div className="mb-2">
+                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                    <Input readonly
+                                        label="Cơ quan cấp"
+                                        type="text"
+                                        name="issuingAuthority"
+                                        onChange={handleLicenseChange}
+                                        value={newLicense?.issuingAuthority}
+                                        fullWidth
+                                        isReadOnly={newApplication.status === "Đã hoàn thành"}
+                                    />
+                                </div>
+                                <div className="mb-2">
+                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                    <Input readonly
+                                        label="Người ký"
+                                        type="text"
+                                        name="signedBy"
+                                        onChange={handleLicenseChange}
+                                        value={newLicense?.signedBy}
+                                        fullWidth
+                                        isReadOnly={newApplication.status === "Đã hoàn thành"}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
 
                 {/* <div className="m-2">
                     <h3 className="text-xl font-bold mb-2">Danh sách giấy phép</h3>

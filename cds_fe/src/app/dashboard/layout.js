@@ -101,12 +101,12 @@ export default function DashboardLayout({ children }) {
                                 </li>
                                 <li className="mb-2">
                                     <Link href="/dashboard/employee">
-                                        <span className={pathname === '/dashboard/license' ? 'block p-2 rounded bg-gray-700' : 'block p-2 rounded hover:bg-gray-700'}> <FontAwesomeIcon icon={faUser} color="white" width={25} /> Quản lý người lái tàu</span>
+                                        <span className={pathname.includes('/dashboard/employee') ? 'block p-2 rounded bg-gray-700' : 'block p-2 rounded hover:bg-gray-700'}> <FontAwesomeIcon icon={faUser} color="white" width={25} /> Quản lý người lái tàu</span>
                                     </Link>
                                 </li>
                                 <li className="mb-2">
                                     <Link href="/dashboard/license">
-                                        <span className={pathname === '/dashboard/approve' ? 'block p-2 rounded bg-gray-700' : 'block p-2 rounded hover:bg-gray-700'}> <FontAwesomeIcon icon={faCertificate} color="white" width={25} />  Quản lý giấy phép</span>
+                                        <span className={pathname.includes('/dashboard/license') ? 'block p-2 rounded bg-gray-700' : 'block p-2 rounded hover:bg-gray-700'}> <FontAwesomeIcon icon={faCertificate} color="white" width={25} />  Quản lý giấy phép</span>
                                     </Link>
                                 </li>
 
@@ -115,6 +115,11 @@ export default function DashboardLayout({ children }) {
                                         <span className={pathname === '/dashboard/company' ? 'block p-2 rounded bg-gray-700' : 'block p-2 rounded hover:bg-gray-700'}> <FontAwesomeIcon icon={faBuilding} color="white" width={25} /> Quản lý doanh nghiệp</span>
                                     </Link>
                                 </li>
+                                {/* <li className="mb-2">
+                                    <Link href="/dashboard/user">
+                                        <span className={pathname === '/dashboard/user' ? 'block p-2 rounded bg-gray-700' : 'block p-2 rounded hover:bg-gray-700'}> <FontAwesomeIcon icon={faUser} color="white" width={25} /> Quản lý người dùng</span>
+                                    </Link>
+                                </li> */}
                             </ul>
                         </nav>
                     </div>

@@ -1,57 +1,90 @@
 'use client'
-import { useState, useEffect } from 'react';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Button, Modal, AutocompleteItem, Autocomplete } from '@nextui-org/react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Pagination, Tooltip, AutocompleteItem, Autocomplete } from '@nextui-org/react';
 import { EyeIcon } from "../../button-icon/viewIcon";
 import { SearchIcon } from '../../button-icon/searchIcon';
+import { getEmployees, getCompany } from '../../helper/api';
+import { useRouter } from 'next/navigation';
 export default function TrainDriversPage() {
-    const [drivers, setDrivers] = useState([]);
+    const rourer = useRouter();
+
     const [searchTerm, setSearchTerm] = useState('');
-    const [newDriver, setNewDriver] = useState({
-        cccd: '',
-        fullName: '',
-        workUnit: '',
-        status: '',
-        specialization: ''
-    });
-    const [visible, setVisible] = useState(false);
+  
+    const [employees, setEmployees] = useState([]);
 
-    useEffect(() => {
-        // Fetch the driver data from an API or define it statically
-        const fetchDrivers = async () => {
-            // Example static data
-            const data = [
-                { cccd: '123456789', fullName: 'Nguyễn Văn Anh', workUnit: 'Công ty than Hồng Thái', status: 'Đang làm việc', specialization: 'Chuyên môn A' },
-                { cccd: '987654321', fullName: 'Lê Đăng Dương', workUnit: 'Công ty tập đoàn Trí Nam', status: 'Đang làm việc', specialization: 'Chuyên môn B' },
-                // Add more drivers as needed
-            ];
-            setDrivers(data);
-        };
-
-        fetchDrivers();
-    }, []);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setNewDriver({ ...newDriver, [name]: value });
-    };
-
-    const handleAddDriver = (e) => {
-        e.preventDefault();
-        setDrivers([...drivers, { ...newDriver, id: drivers.length + 1 }]);
-        setNewDriver({ cccd: '', fullName: '', workUnit: '', status: '', specialization: '' });
-        setVisible(false);
-    };
-
-    const openModal = () => setVisible(true);
-    const closeModal = () => setVisible(false);
-
-    const filteredDrivers = drivers.filter(driver =>
+    const [page, setPage] = useState(1);
+    const rowsPerPage = 10;
+    const columns = [
+        { name: "CCCD", uid: "citizenID" },
+        { name: "Họ và tên", uid: "fullName" },
+        { name: "Đơn vị công tác", uid: "companyId" },
+        { name: "Trạng thái", uid: "status" },
+        { name: "Chuyên môn", uid: "licenseType" },
+        { name: "", uid: "actions" },
+    ];
+    const filteredDrivers = employees.filter(driver =>
         driver.fullName.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const pages = Math.ceil(employees.length / rowsPerPage);
+
+    const items = useMemo(() => {
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+
+        return filteredDrivers.slice(start, end);
+    }, [page, filteredDrivers]);
+
+    useEffect(() => {
+        // Fetch the driver data from an API or define it statically
+        const getData = async () => {
+
+            const data = await getEmployees();
+            setEmployees(data);
+
+        }
+        getData()
+        // fetchDrivers();
+    }, []);
+
+
+    const getCompayName = async (id) => {
+        try {
+            const data = await getCompany(id);
+            return data.companyName;
+        } catch (error) {
+            console.error("error", error);
+        }
+    }
+
+
+    const renderCell = useCallback((employee, columnKey) => {
+        const cellValue = employee[columnKey];
+        const maHS = employee.employeeID;
+        switch (columnKey) {
+            case "compnyID":
+                return <span> {
+                    getCompayName(employee.companyID)
+                }</span>
+
+            case "actions":
+                return (
+                    <div className="relative flex justify-end items-end gap-2">
+                        <Tooltip content="Xem chi tiết">
+                            <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                                <EyeIcon onClick={() => rourer.push(`/dashboard/employee/${employee.employeeID}`)} />
+                            </span>
+                        </Tooltip>
+                    </div>
+                );
+            default:
+                return cellValue;
+        }
+    }, [getCompayName]);
+
     const status = [ // Example data for Autocomplete   
-        { label: "Đang làm việc", value: "Đang làm việc" },
-        { label: "Nghỉ việc", value: "Nghỉ việc" },
+        { label: "Đang công tác", value: "Đang công tác" },
+        { label: "Đã nghỉ việc", value: "Đã nghỉ việc" },
     ]
 
     return (
@@ -74,6 +107,10 @@ export default function TrainDriversPage() {
                     <Autocomplete
                         label="Chọn trạng thái"
                         className="max-w-xs"
+                        onSelectionChange={(value) => {
+                            console.log("Selected value", value);
+                        }
+                        }
                     >
                         {status.map((st) => (
                             <AutocompleteItem key={st.value} value={st.value}>
@@ -83,75 +120,38 @@ export default function TrainDriversPage() {
                     </Autocomplete>
                 </div>
             </div>
-            {/* <Button onClick={openModal}>Thêm mới</Button> */}
-            {/* <Modal open={visible} onClose={closeModal}>
-                <Modal.Header>
-                    <h2 className="text-xl font-bold">Thêm người lái tàu mới</h2>
-                </Modal.Header>
-                <Modal.Body>
-                    <form onSubmit={handleAddDriver}>
-                        <div className="mb-2">
-                            <label className="block text-gray-700">CCCD</label>
-                            <Input
-                                type="text"
-                                name="cccd"
-                                value={newDriver.cccd}
-                                onChange={handleInputChange}
-                                fullWidth
-                                required
-                            />
-                        </div>
-                        <div className="mb-2">
-                            <label className="block text-gray-700">Họ tên</label>
-                            <Input
-                                type="text"
-                                name="fullName"
-                                value={newDriver.fullName}
-                                onChange={handleInputChange}
-                                fullWidth
-                                required
-                            />
-                        </div>
-                        <div className="mb-2">
-                            <label className="block text-gray-700">Đơn vị công tác</label>
-                            <Input
-                                type="text"
-                                name="workUnit"
-                                value={newDriver.workUnit}
-                                onChange={handleInputChange}
-                                fullWidth
-                                required
-                            />
-                        </div>
-                        <div className="mb-2">
-                            <label className="block text-gray-700">Trạng thái</label>
-                            <Input
-                                type="text"
-                                name="status"
-                                value={newDriver.status}
-                                onChange={handleInputChange}
-                                fullWidth
-                                required
-                            />
-                        </div>
-                        <div className="mb-2">
-                            <label className="block text-gray-700">Chuyên môn</label>
-                            <Input
-                                type="text"
-                                name="specialization"
-                                value={newDriver.specialization}
-                                onChange={handleInputChange}
-                                fullWidth
-                                required
-                            />
-                        </div>
-                        <Button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-                            Thêm người lái tàu
-                        </Button>
-                    </form>
-                </Modal.Body>
-            </Modal> */}
-            <Table
+
+            <Table aria-label=""
+                bottomContent={
+                    <div className="flex w-full justify-center">
+                        <Pagination
+                            isCompact
+                            showControls
+                            showShadow
+                            color="secondary"
+                            page={page}
+                            total={pages}
+                            onChange={(page) => setPage(page)}
+                        />
+                    </div>
+                }>
+                <TableHeader columns={columns}>
+                    {(column) => (
+                        <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
+                            {column.name}
+                        </TableColumn>
+                    )}
+                </TableHeader>
+                <TableBody items={items}>
+                    {(item) => (
+                        <TableRow key={item.employeeID}>
+                            {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+
+            {/* <Table
                 aria-label="Train Drivers List"
                 classNames={{
                     wrapper: "min-h-[222px] border border-gray-300 rounded-lg shadow-md",
@@ -170,16 +170,16 @@ export default function TrainDriversPage() {
                 </TableHeader>
                 <TableBody items={filteredDrivers}>
                     {(item) => (
-                        <TableRow key={item.cccd}>
-                            <TableCell>{item.cccd}</TableCell>
+                        <TableRow key={item.citizenID}>
+                            <TableCell>{item.citizenID}</TableCell>
                             <TableCell>{item.fullName}</TableCell>
-                            <TableCell>{item.workUnit}</TableCell>
+                            <TableCell>{getCompayName(item.companyID)}</TableCell>
                             <TableCell>{item.status}</TableCell>
-                            <TableCell>{item.specialization}</TableCell>
+                            <TableCell>{item.licenseType}</TableCell>
                         </TableRow>
                     )}
                 </TableBody>
-            </Table>
+            </Table> */}
         </div>
     );
 }
