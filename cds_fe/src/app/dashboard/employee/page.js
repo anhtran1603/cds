@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Pagination, Tooltip, AutocompleteItem, Autocomplete } from '@nextui-org/react';
 import { EyeIcon } from "../../button-icon/viewIcon";
 import { SearchIcon } from '../../button-icon/searchIcon';
-import { getEmployees, getCompany } from '../../helper/api';
+import { getEmployees, getCompany ,getAllEmployees} from '../../helper/api';
 import { useRouter } from 'next/navigation';
 export default function TrainDriversPage() {
     const rourer = useRouter();
@@ -39,7 +39,7 @@ export default function TrainDriversPage() {
         // Fetch the driver data from an API or define it statically
         const getData = async () => {
 
-            const data = await getEmployees();
+            const data = await getAllEmployees();
             setEmployees(data);
 
         }

@@ -232,6 +232,22 @@ export async function getEmployees() {
     return res.json();
 }
 
+export async function getAllEmployees() {
+    const res = await fetch(API_URL + `/employee/all`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+        },
+        next: { revalidate: 3600 }
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to fetch data');
+    }
+
+    return res.json();
+}
 export async function getEmployee(id) {
     const res = await fetch(API_URL + `/employee/${id}`, {
         method: 'GET',

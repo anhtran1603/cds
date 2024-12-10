@@ -24,6 +24,22 @@ namespace cds_be.Controllers
             return await _context.Employees.ToListAsync();
         }
 
+        [HttpGet("all")]
+        public async Task<ActionResult<IEnumerable<Employee>>> GetAllEmployees()
+        {
+            var employees = await _context.Employees
+                   .Include(e => e.Application)
+                   .Where(e => e.Application.Status == "Đã hoàn thành")
+                   .ToListAsync();
+
+            if (employees == null || employees.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return employees;
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<Employee>> GetEmployee(int id)
         {

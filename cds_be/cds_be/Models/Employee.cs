@@ -46,5 +46,7 @@ namespace cds_be.Models
         public string? HealthCertificateContent { get; set; }
         public string? RailwayType { get; set; }
         public string? Status { get; set; }
+        [ForeignKey("ApplicationID")]
+        public Application? Application { get; set; }
     }
 }

@@ -942,7 +942,7 @@ export default function Page() {
 
                                     {
 
-                                        newApplication.status === "Đã duyệt" ?
+                                        newApplication.status === "Đã duyệt" && user?.userId == newApplication.appraiser ?
                                             <>
                                                 <label className="block text-gray-700">Thông báo sát hạch</label>
                                                 <UploadFile name='examinationPlan' setName={setExaminationPlan} setBase64Content={setExaminationPlanContent} />
@@ -970,7 +970,7 @@ export default function Page() {
                                     {/* <label className="block text-gray-700">Thông báo sát hạch</label> */}
                                     {
 
-                                        newApplication.status === "Đã duyệt" ?
+                                        newApplication.status === "Đã duyệt" && user?.userId == newApplication.appraiser ?
                                             <>
                                                 <label className="block text-gray-700">Kết quả sát hạch</label>
                                                 <UploadFile name='result' setName={setResult} setBase64Content={setResultContent} />
@@ -1006,13 +1006,13 @@ export default function Page() {
                                         value={newLicense?.licenseNumber}
                                         fullWidth
                                         isRequired
-                                        isReadOnly={newApplication.status === "Đã hoàn thành"}
+                                        isReadOnly={newApplication.status === "Đã hoàn thành" || newApplication.appraiser != user?.userId}
                                     />
                                 </div>
                                 <div className="mb-2">
                                     {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
                                     {
-                                        newApplication.status === "Đã duyệt" ? <Input
+                                        newApplication.status === "Đã duyệt" && user?.userId == newApplication.appraiser ? <Input
                                             label="Ngày cấp"
                                             type="date"
                                             name="issueDate"
@@ -1034,7 +1034,7 @@ export default function Page() {
                                 <div className="mb-2">
                                     {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
                                     {
-                                        newApplication.status === "Đã duyệt" ? <Input
+                                        newApplication.status === "Đã duyệt" && user?.userId == newApplication.appraiser ? <Input
                                             label="Ngày hết hạn"
                                             type="date"
                                             name="expiryDate"
@@ -1063,7 +1063,7 @@ export default function Page() {
                                         onChange={handleLicenseChange}
                                         value={newLicense?.issuingAuthority}
                                         fullWidth
-                                        isReadOnly={newApplication.status === "Đã hoàn thành"}
+                                        isReadOnly={newApplication.status === "Đã hoàn thành" ||  user?.userId !== newApplication?.appraiser}
                                     />
                                 </div>
                                 <div className="mb-2">
@@ -1075,7 +1075,7 @@ export default function Page() {
                                         onChange={handleLicenseChange}
                                         value={newLicense?.signedBy}
                                         fullWidth
-                                        isReadOnly={newApplication.status === "Đã hoàn thành"}
+                                        isReadOnly={newApplication.status === "Đã hoàn thành" && user?.userId !== newApplication?.appraiser}
                                     />
                                 </div>
                             </div>
