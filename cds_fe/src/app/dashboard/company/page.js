@@ -111,9 +111,14 @@ export default function Page() {
             newErrors.phoneNumber = 'Số điện thoại không được để trống';
             isValid = false;
         } else {
-            const phoneRegex = /^[0-9]+$/;
-            if (!phoneRegex.test(newCompany.phoneNumber)) {
+            const phoneRegex = /^[0-9]+$/; 
+            const phoneLengthRegex = /^\d{10}$/;
+
+            if (!phoneRegex.test(newUser.phoneNumber)) {
                 newErrors.phoneNumber = 'Số điện thoại chỉ được chứa số';
+                isValid = false;
+            } else if (!phoneLengthRegex.test(newUser.phoneNumber)) {
+                newErrors.phoneNumber = 'Số điện thoại phải chứa đúng 10 chữ số';
                 isValid = false;
             }
         }

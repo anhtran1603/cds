@@ -119,7 +119,7 @@ namespace cds_be.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(user);
         }
 
         [HttpDelete("{id}")]
@@ -134,7 +134,7 @@ namespace cds_be.Controllers
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(user);
         }
 
         private bool UserExists(int id)

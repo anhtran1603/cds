@@ -34,6 +34,53 @@ export async function getUsers() {
 
     return res.json();
 }
+export async function addUser(data: any) {
+    const res = await fetch(API_URL + `/auth`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+        },
+        body: JSON.stringify(data),
+        next: { revalidate: 3600 }
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        console.log(errorData);
+        throw new Error(errorData.message || 'Failed to fetch data');
+    }
+
+    return res.json();
+}
+
+export async function updateUser(id: string, data: any) {
+    const res = await fetch(API_URL + `/auth/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+        },
+        body: JSON.stringify(data),
+        next: { revalidate: 3600 }
+    });
+    return res.json();
+}
+
+export async function deleteUser(id: string) {
+    const res = await fetch(API_URL + `/auth/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+        },
+        next: { revalidate: 3600 }
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to fetch data');
+    }
+
+    return res.json();
+}
 
 export async function getCompanies() {
     const res = await fetch(API_URL + `/company`, {
