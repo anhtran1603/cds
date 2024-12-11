@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Input, Accordion, AccordionItem, Autocomplete, AutocompleteItem, Image, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
 import { faEye, faUpload } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { addApplication, addEmployee, getCompanies } from '../../../helper/api';
+import { addApplication, addEmployee, getCompanies, checkDuplicateCitizenID } from '../../../helper/api';
 import UploadFile from '../../../components/uploadFile';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
@@ -41,7 +41,7 @@ export default function Page() {
     const [healthCertificateContent, setHealthCertificateContent] = useState(null);
     const [personalStatementContent, setPersonalStatementContent] = useState(null);
     const [companyName, setCompanyName] = useState('');
-
+    const [isDuplicate, setIsDuplicate] = useState(false);
     const [newEmployee, setNewEmployee] = useState({
         avatar: '',
         citizenID: '',
@@ -63,7 +63,7 @@ export default function Page() {
 
     const handleEmployeeInputChange = (e) => {
         const { name, value } = e.target;
-
+        setIsDuplicate(false);
         setNewEmployee({ ...newEmployee, [name]: value });
     };
 
@@ -121,7 +121,7 @@ export default function Page() {
     };
 
     const [maHS, setMaHS] = useState("MHS" + Date.now());
-  
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -135,6 +135,18 @@ export default function Page() {
         setNewApplication({ ...newApplication, employees: updatedEmployees });
     };
 
+    const handleCheckDuplicate = async (e) => {
+        const { name, value } = e.target;
+        if (value.length < 9) {
+            setIsDuplicate(false);
+            return;
+        }
+        var rs = await checkDuplicateCitizenID(value);
+
+        console.log(rs);
+        setIsDuplicate(rs);
+
+    }
 
     useEffect(() => {
 
@@ -147,10 +159,10 @@ export default function Page() {
 
     }, [getCompanies]);
 
-const employeeStatus = [
-    { label: "Đang công tác", value: "Đang công tác" },
-    { label: "Đã nghỉ việc", value: "Đã nghỉ việc" }
-];
+    const employeeStatus = [
+        { label: "Đang công tác", value: "Đang công tác" },
+        { label: "Đã nghỉ việc", value: "Đã nghỉ việc" }
+    ];
 
 
     const licenseTypes = [   // Example data for Autocomplete
@@ -180,10 +192,10 @@ const employeeStatus = [
                 returnDate: new Date(newApplication.returnDate),
                 appraiser: 0,
             }
-     
+
             var rs = await addApplication(data);
             if (rs) {
-          
+
                 if (newEmployee) {   // Add employees to the application
                     // employees.forEach(async (employee) => {
                     var employeeData = {
@@ -454,7 +466,7 @@ const employeeStatus = [
                                     required
                                 />
                             </div>
-                            
+
                         </div>
                     </AccordionItem>
                     <AccordionItem
@@ -510,15 +522,18 @@ const employeeStatus = [
                             <div className="grid grid-cols-2 gap-4 mb-4">
 
                                 <div className="mb-2">
-                                   
+
                                     <Input
                                         label="Mã số cá nhân"
                                         type="text"
                                         name="citizenID"
                                         value={newEmployee.citizenID}
                                         onChange={handleEmployeeInputChange}
+                                        onBlur={handleCheckDuplicate}
                                         fullWidth
-                                        required
+                                        isRequired
+                                        isInvalid={isDuplicate}
+                                        errorMessage={isDuplicate ? "Mã số cá nhân đã tồn tại" : ""}
                                     />
                                 </div>
                                 <div className="mb-2">
@@ -644,7 +659,7 @@ const employeeStatus = [
                                 <div className="mb-2">
                                     {/* <label className="block text-gray-700">Phương tiện sát hạch</label> */}
                                     <Input
-                                    label="Phương tiện sát hạch"
+                                        label="Phương tiện sát hạch"
                                         type="text"
                                         name="testVehicleCode"
                                         value={newEmployee.testVehicleCode}
@@ -685,7 +700,7 @@ const employeeStatus = [
                                         defaultSelectedKey={"Đang công tác"}
                                         name='status'
                                         fullWidth
-                                        
+
                                     >
                                         {employeeStatus.map((animal) => (
                                             <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>

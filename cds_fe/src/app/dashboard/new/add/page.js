@@ -157,7 +157,7 @@ export default function Page() {
             var rs = await checkDuplicateCitizenID(value);
 
             console.log(rs);
-            setIsDuplicate(r);
+            setIsDuplicate(rs);
 
         }
 
