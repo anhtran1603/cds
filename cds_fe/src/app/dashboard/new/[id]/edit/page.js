@@ -43,6 +43,8 @@ export default function Page() {
     const [personalStatementContent, setPersonalStatementContent] = useState(null);
     const [licenseType, setLicenseType] = useState('');
     const [companyName, setCompanyName] = useState('');
+    const [loading, setLoading] = useState(false);
+
 
     const [newEmployee, setNewEmployee] = useState({
         id: '',
@@ -68,7 +70,7 @@ export default function Page() {
 
 
     const getData = useCallback(async () => {
-
+        setLoading(true)
         var data = await getApplication(id);
         const submitDate = formatDate(data.submitDate);
         const returnDate = formatDate(data.returnDate);
@@ -85,7 +87,7 @@ export default function Page() {
         const dateOfBirth = formatDate(employee?.dateOfBirth);
         setLicenseType(employee?.licenseType);
         setNewEmployee({ ...employee, dateOfBirth });
-
+        setLoading(false);
     }, [id, getEmployees, getApplication]);
 
 
@@ -333,7 +335,9 @@ export default function Page() {
             reader.onerror = (error) => reject(error);
         });
     };
-    console.log(companyId);
+    if(loading){
+        return <div>Loading...</div>
+    }
     
     return (
         <div className="container mx-auto p-4">
@@ -389,7 +393,7 @@ export default function Page() {
                                     defaultItems={companies}
                                     // defaultInputValue={"Công ty hồng thái"}
                                     onInputChange={handleChangeCompany}
-                                    defaultSelectedKey={"1"}
+                                    defaultSelectedKey={companyId}
 
                                 >
                                     {(item) => <AutocompleteItem key={item.companyID} value={item.value} textValue={item.companyName}>{item.companyName}</AutocompleteItem>}
@@ -623,7 +627,7 @@ export default function Page() {
                                         label="Loại tuyến đường sắt"
                                         value={newEmployee.railwayType}
                                         onInputChange={handleRailwayTypeChange}
-
+                                        defaultSelectedKey={newEmployee.railwayType}
                                         name='railwayType'
                                         fullWidth
                                         isRequired
