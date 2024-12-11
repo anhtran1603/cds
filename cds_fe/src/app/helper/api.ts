@@ -18,6 +18,23 @@ export async function Login(username: string, password: string) {
     return res.json();
 }
 
+export async function getUsers() {
+    const res = await fetch(API_URL + `/auth`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+        },
+        next: { revalidate: 3600 }
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to fetch data');
+    }
+
+    return res.json();
+}
+
 export async function getCompanies() {
     const res = await fetch(API_URL + `/company`, {
         method: 'GET',
@@ -80,12 +97,6 @@ export async function updateCompany(id: string, data: any) {
         body: JSON.stringify(data),
         next: { revalidate: 3600 }
     });
-
-    if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to fetch data');
-    }
-
     return res.json();
 }
 

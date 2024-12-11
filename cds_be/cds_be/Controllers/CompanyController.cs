@@ -72,7 +72,7 @@ namespace cds_be.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(company);
         }
 
         [HttpDelete("{id}")]
@@ -87,7 +87,7 @@ namespace cds_be.Controllers
             _context.Companies.Remove(company);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(company);
         }
 
         private bool CompanyExists(int id)
