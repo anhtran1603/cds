@@ -423,3 +423,19 @@ export async function getUserByRole(roleId: number) {
     return res.json();
     
 }
+export async function checkDuplicateCitizenID(citizenID: string) {
+    const res = await fetch(API_URL + `/employee/check-duplicate/${citizenID}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+        },
+        next: { revalidate: 3600 }
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to fetch data');
+    }
+    const data = await res.json();
+ return data;
+}

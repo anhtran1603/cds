@@ -3,10 +3,11 @@ import { useEffect, useState } from 'react';
 import { Input, Accordion, AccordionItem, Autocomplete, AutocompleteItem, Image, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
 import { faEye, faUpload } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { addApplication, addEmployee, getCompanies } from '../../../helper/api';
+import { addApplication, addEmployee, checkDuplicateCitizenID, getCompanies } from '../../../helper/api';
 import UploadFile from '../../../components/uploadFile';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import { set } from 'date-fns';
 
 export default function Page() {
     const router = useRouter();
@@ -41,6 +42,7 @@ export default function Page() {
     const [healthCertificateContent, setHealthCertificateContent] = useState(null);
     const [personalStatementContent, setPersonalStatementContent] = useState(null);
     const [companyName, setCompanyName] = useState('');
+    const [isDuplicate, setIsDuplicate] = useState(false);
 
     const [newEmployee, setNewEmployee] = useState({
         avatar: '',
@@ -63,7 +65,7 @@ export default function Page() {
 
     const handleEmployeeInputChange = (e) => {
         const { name, value } = e.target;
-
+        setIsDuplicate(false);
         setNewEmployee({ ...newEmployee, [name]: value });
     };
 
@@ -146,399 +148,283 @@ export default function Page() {
 
     }, [getCompanies]);
 
-const employeeStatus = [
-    { label: "Đang công tác", value: "Đang công tác" },
-    { label: "Đã nghỉ việc", value: "Đã nghỉ việc" }
-];
+    const handleCheckDuplicate = async (e) => {
+        const { name, value } = e.target;
+        if (value.length < 9) {
+            setIsDuplicate(false);
+            return;
+        }
+            var rs = await checkDuplicateCitizenID(value);
+
+            console.log(rs);
+            setIsDuplicate(r);
+
+        }
+
+        const employeeStatus = [
+            { label: "Đang công tác", value: "Đang công tác" },
+            { label: "Đã nghỉ việc", value: "Đã nghỉ việc" }
+        ];
 
 
-    const licenseTypes = [   // Example data for Autocomplete
-        { label: "Đầu máy diesel", value: "Đầu máy diesel" },
-        { label: "Đầu máy điện", value: "Đầu máy điện" },
-        { label: "Đầu máy hơi nước", value: "Đầu máy hơi nước" },
-        { label: "Phương tiện chuyên dùng đường sắt", value: "Phương tiện chuyên dùng đường sắt" }
-    ];
+        const licenseTypes = [   // Example data for Autocomplete
+            { label: "Đầu máy diesel", value: "Đầu máy diesel" },
+            { label: "Đầu máy điện", value: "Đầu máy điện" },
+            { label: "Đầu máy hơi nước", value: "Đầu máy hơi nước" },
+            { label: "Phương tiện chuyên dùng đường sắt", value: "Phương tiện chuyên dùng đường sắt" }
+        ];
 
-    const railwayTypes = [   // Example data for Autocomplete
-        { label: "Đường săt chuyên dụng", value: "Đường săt chuyên dụng" },
-        { label: "Đường sắt hỏa", value: "Đường sắt hỏa" },
-        { label: "Đường sắt đô thị", value: "Đường sắt đô thị" },
-        { label: "Đường sắt nông thôn", value: "Đường sắt nông thôn" }
-    ];
+        const railwayTypes = [   // Example data for Autocomplete
+            { label: "Đường săt chuyên dụng", value: "Đường săt chuyên dụng" },
+            { label: "Đường sắt hỏa", value: "Đường sắt hỏa" },
+            { label: "Đường sắt đô thị", value: "Đường sắt đô thị" },
+            { label: "Đường sắt nông thôn", value: "Đường sắt nông thôn" }
+        ];
 
-    const handleAddApplication = async (e) => {
-        e.preventDefault();
-        // Handle the form submission logic here
-        try {
-            var data = {
-                ...newApplication,
-                applicationID: maHS,
-                applicationType: 'Cấp mới',
-                status: 'Chờ xử lý',
-                submitDate: new Date(newApplication.submitDate),
-                returnDate: new Date(newApplication.returnDate),
-                appraiser: 0,
-            }
-     
-            var rs = await addApplication(data);
-            if (rs) {
-          
-                if (newEmployee) {   // Add employees to the application
-                    // employees.forEach(async (employee) => {
-                    var employeeData = {
-                        ...newEmployee,
-                        id: 0,
-                        applicationID: maHS,
-                        companyID: newApplication.companyID,
-                        birthDate: newEmployee.dateOfBirth,
-                    }
-                    await addEmployee(employeeData);
-                    // });
+        const handleAddApplication = async (e) => {
+            e.preventDefault();
+            // Handle the form submission logic here
+            try {
+                var data = {
+                    ...newApplication,
+                    applicationID: maHS,
+                    applicationType: 'Cấp mới',
+                    status: 'Chờ xử lý',
+                    submitDate: new Date(newApplication.submitDate),
+                    returnDate: new Date(newApplication.returnDate),
+                    appraiser: 0,
                 }
 
-                toast.success('Thêm hồ sơ thành công');
-                router.push('/dashboard/new');
-                // Reset the form
-                setNewApplication({
-                    applicationID: '',
-                    companyID: '',
-                    taxCode: '',
-                    submitterName: '',
-                    submitDate: '',
-                    status: '',
-                    email: '',
-                    phoneNumber: '',
-                    requestForm: '',
-                    certificationDocument: '',
-                    certificationDocumentContent: '',
+                var rs = await addApplication(data);
+                if (rs) {
 
-                });
-                setNewEmployee({
-                    avatar: null,
-                    citizenID: '',
-                    fullName: '',
-                    dateOfBirth: '',
-                    phoneNumber: '',
-                    licenseType: '',
-                    testVehicleCode: '',
-                    companyID: '',
-                    trainingLevel: '',
-                    experienceMonths: '',
-                    personalStatement: '',
-                    personalStatementContent: '',
-                    healthCertificate: "",
-                    healthCertificateContent: "",
-                    railwayType: '',
-                    status: 'Đang công tác'
-                });
-            } else {
-                toast.error('Thêm hồ sơ thất bại');
+                    if (newEmployee) {   // Add employees to the application
+                        // employees.forEach(async (employee) => {
+                        var employeeData = {
+                            ...newEmployee,
+                            id: 0,
+                            applicationID: maHS,
+                            companyID: newApplication.companyID,
+                            birthDate: newEmployee.dateOfBirth,
+                        }
+                        await addEmployee(employeeData);
+                        // });
+                    }
+
+                    toast.success('Thêm hồ sơ thành công');
+                    router.push('/dashboard/new');
+                    // Reset the form
+                    setNewApplication({
+                        applicationID: '',
+                        companyID: '',
+                        taxCode: '',
+                        submitterName: '',
+                        submitDate: '',
+                        status: '',
+                        email: '',
+                        phoneNumber: '',
+                        requestForm: '',
+                        certificationDocument: '',
+                        certificationDocumentContent: '',
+
+                    });
+                    setNewEmployee({
+                        avatar: null,
+                        citizenID: '',
+                        fullName: '',
+                        dateOfBirth: '',
+                        phoneNumber: '',
+                        licenseType: '',
+                        testVehicleCode: '',
+                        companyID: '',
+                        trainingLevel: '',
+                        experienceMonths: '',
+                        personalStatement: '',
+                        personalStatementContent: '',
+                        healthCertificate: "",
+                        healthCertificateContent: "",
+                        railwayType: '',
+                        status: 'Đang công tác'
+                    });
+                } else {
+                    toast.error('Thêm hồ sơ thất bại');
+                }
+
+            } catch (error) {
+                console.log(error);
+                toast.error('Có lỗi xảy ra. Vui lòng thử lại');
             }
 
-        } catch (error) {
-            console.log(error);
-            toast.error('Có lỗi xảy ra. Vui lòng thử lại');
+
+        };
+
+
+        const handleChangeCompany = (value) => {
+
+            var company = companies.find((com) => com.companyName === value);
+
+            setNewApplication({ ...newApplication, companyID: company?.companyID, taxCode: company?.taxCode, email: company?.email, phoneNumber: company?.phoneNumber });
+
         }
 
+        const handleLicenseTypeChange = (value) => {
 
-    };
+            setNewEmployee({ ...newEmployee, licenseType: value });
+        }
+        const handleRailwayTypeChange = (value) => {
 
-
-    const handleChangeCompany = (value) => {
-
-        var company = companies.find((com) => com.companyName === value);
-
-        setNewApplication({ ...newApplication, companyID: company?.companyID, taxCode: company?.taxCode, email: company?.email, phoneNumber: company?.phoneNumber });
-
-    }
-
-    const handleLicenseTypeChange = (value) => {
-
-        setNewEmployee({ ...newEmployee, licenseType: value });
-    }
-    const handleRailwayTypeChange = (value) => {
-
-        setNewEmployee({ ...newEmployee, railwayType: value });
-    }
-
-    useEffect(() => {
-        const getCompanyName = () => {  // Get company name by companyID
-            var company = companies.find((com) => com.companyID === newApplication.companyID);
-            setCompanyName(company?.companyName);
+            setNewEmployee({ ...newEmployee, railwayType: value });
         }
 
-        getCompanyName();
-    }, [newApplication.companyID, companies]);
+        useEffect(() => {
+            const getCompanyName = () => {  // Get company name by companyID
+                var company = companies.find((com) => com.companyID === newApplication.companyID);
+                setCompanyName(company?.companyName);
+            }
+
+            getCompanyName();
+        }, [newApplication.companyID, companies]);
 
 
-    const [base64, setBase64] = useState('');
-    // const [downloadLink, setDownloadLink] = useState('');
+        const [base64, setBase64] = useState('');
+        // const [downloadLink, setDownloadLink] = useState('');
 
-    const handleFileChange = (e) => {
-        // setFile(e.target.files[0]);
-        handleUpload(e.target.files[0])
-    };
+        const handleFileChange = (e) => {
+            // setFile(e.target.files[0]);
+            handleUpload(e.target.files[0])
+        };
 
-    const handleUpload = async (file) => {
-        if (file) {
-            const base64String = await convertToBase64(file);
-            setNewEmployee({ ...newEmployee, avatar: base64String });
-        } else {
-            console.log('Please select a file');
-        }
-    };
+        const handleUpload = async (file) => {
+            if (file) {
+                const base64String = await convertToBase64(file);
+                setNewEmployee({ ...newEmployee, avatar: base64String });
+            } else {
+                console.log('Please select a file');
+            }
+        };
 
-    // const handleDownload = () => {
-    //     if (base64) {
-    //         const file = convertBase64ToFile(base64, file.name);
-    //         const url = URL.createObjectURL(file);
-    //         setDownloadLink(url);
-    //     } else {
-    //         console.log('No base64 string available');
-    //     }
-    // };
+        // const handleDownload = () => {
+        //     if (base64) {
+        //         const file = convertBase64ToFile(base64, file.name);
+        //         const url = URL.createObjectURL(file);
+        //         setDownloadLink(url);
+        //     } else {
+        //         console.log('No base64 string available');
+        //     }
+        // };
 
-    const convertToBase64 = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject(error);
-        });
-    };
-    return (
-        <div className="container mx-auto p-4">
-            < div className="flex items-center justify-between ">
-                <h1 className="text-2xl font-bold mb-4">Thêm mới hồ sơ</h1>
-                <Button onClick={handleAddApplication} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-                    Lưu hồ sơ
-                </Button>
-            </div>
+        const convertToBase64 = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
+            });
+        };
+        return (
+            <div className="container mx-auto p-4">
+                < div className="flex items-center justify-between ">
+                    <h1 className="text-2xl font-bold mb-4">Thêm mới hồ sơ</h1>
+                    <Button onClick={handleAddApplication} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        Lưu hồ sơ
+                    </Button>
+                </div>
 
-            <div >
+                <div >
 
-                <Accordion selectionMode="multiple" defaultExpandedKeys={["1", "2"]}>
-                    <AccordionItem
-                        key="1"
-                        title={<b>Thông tin hồ sơ</b>}
-                        aria-expanded="true"
-                    >
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="mb-2">
-                                {/* <label className="block text-gray-700">Mã hồ sơ</label> */}
-                                <Input
-                                    label="Mã hồ sơ"
-                                    type="text"
-                                    name="applicationID"
-                                    value={maHS}
-                                    // onChange={handleInputChange}
-                                    fullWidth
-                                    isRequired
-                                    disabled
-                                />
-                            </div>
-                            <div className="mb-2">
-                                <Autocomplete
-                                    label="Chọn doanh nghiệp"
-                                    name='companyID'
-                                    fullWidth
-                                    isRequired
-                                    onInputChange={handleChangeCompany}
-                                    value={newApplication.companyID}
-                                >
-                                    {companies.map((com) => (
-                                        <AutocompleteItem key={com.companyID} value={com.companyID}>
-                                            {com.companyName}
-                                        </AutocompleteItem>
-                                    ))}
-                                </Autocomplete>
-                            </div>
-                            <div className="mb-2">
-
-                                <Input
-                                    label="Mã số thuế"
-                                    type="text"
-                                    name="taxCode"
-                                    value={newApplication.taxCode}
-                                    onChange={handleInputChange}
-                                    fullWidth
-                                    isRequired
-                                />
-                            </div>
-                            <div className="mb-2">
-
-                                <Input
-                                    label="Người nộp hồ sơ"
-                                    type="text"
-
-                                    name="submitterName"
-                                    value={newApplication.submitterName}
-                                    onChange={handleInputChange}
-                                    fullWidth
-                                    required
-                                />
-                            </div>
-                            <div className="mb-2">
-
-                                <Input
-                                    type="date"
-                                    label="Ngày nộp hồ sơ"
-
-                                    name="submitDate"
-                                    value={newApplication.submitDate}
-                                    onChange={handleInputChange}
-                                    fullWidth
-                                    required
-                                />
-                            </div>
-
-                            <Input
-                                type="hidden"
-                                name="status"
-                                value={newApplication.status}
-                                onChange={handleInputChange}
-                                fullWidth
-                                required
-                            />
-
-                            <div className="mb-2">
-
-                                <Input
-                                    type="email"
-                                    label="Email"
-
-                                    name="email"
-                                    value={newApplication.email}
-                                    onChange={handleInputChange}
-                                    fullWidth
-                                    required
-                                />
-                            </div>
-                            <div className="mb-2">
-                                {/* <label className="block text-gray-700">Số điện thoại</label> */}
-                                <Input
-                                    type="text"
-
-                                    label="Số điện thoại"
-                                    name="phoneNumber"
-                                    value={newApplication.phoneNumber}
-                                    onChange={handleInputChange}
-                                    fullWidth
-                                    required
-                                />
-                            </div>
-                            <div className="mb-2">
-                                {/* <label className="block text-gray-700">Số điện thoại</label> */}
-                                <Input
-                                    type="text"
-
-                                    label="Thời hạn giải quyết"
-                                    name="duration"
-                                    value={newApplication.duration}
-                                    onChange={handleInputChange}
-                                    fullWidth
-                                    required
-                                />
-                            </div>
-                            <div className="mb-2">
-                                {/* <label className="block text-gray-700">Số điện thoại</label> */}
-                                <Input
-                                    type="date"
-
-                                    label="Ngày hẹn trả "
-                                    name="returnDate"
-                                    value={newApplication.returnDate}
-                                    onChange={handleInputChange}
-                                    fullWidth
-                                    required
-                                />
-                            </div>
-                        </div>
-                    </AccordionItem>
-                    <AccordionItem
-                        key="2"
-                        title={<b>Thành phần hồ sơ</b>}
-                        aria-expanded="true"
-                    >
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="mb-2">
-                                <label className="block text-gray-700">Đơn đề nghị</label>
-                                {/*<Input
-                                    type="file"
-                                    name="applicationFile"
-                                    onChange={handleFileChange}
-                                    fullWidth
-                                    required
-                                /> */}
-                                <UploadFile name="applicationFile" setName={setApplicationFile} setBase64Content={setApplicationFileContent} />
-                            </div>
-                            <div className="mb-2">
-                                <label className="block text-gray-700">Văn bản chứng nhận</label>
-                                {/* <Input
-                                    type="file"
-                                    name="certificationDocument"
-                                    onChange={handleFileChange}
-                                    fullWidth
-                                    required
-                                /> */}
-                                <UploadFile name="certificationDocument" setName={setCertificationDocument} setBase64Content={setCertificationDocumentContent} />
-                            </div>
-                        </div>
-                        <div className="mb-2">
-                            <h2 className="text-xl font-bold mb-2">Thông tin người lái tàu</h2>
-                            <div className="mb-4 float-start text-center mt-4 mr-4">
-                                <Image
-                                    isBlurred
-                                    width={256}
-                                    src={newEmployee.avatar ? newEmployee.avatar : "/assets/noimage.jpg"}
-                                    alt="avatar"
-
-                                />
-                                <Input
-                                    type="file"
-                                    name={'avatar'}
-                                    onChange={handleFileChange}
-                                    fullWidth
-                                    required
-                                    className='mt-2 w-64'
-
-                                />
-                                {/* <button className="bg-green-400 mt-5 text-white px-4 py-2 rounded hover:bg-green-700"> <FontAwesomeIcon icon={faUpload} /> Chọn ảnh </button> */}
-                            </div>
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-
+                    <Accordion selectionMode="multiple" defaultExpandedKeys={["1", "2"]}>
+                        <AccordionItem
+                            key="1"
+                            title={<b>Thông tin hồ sơ</b>}
+                            aria-expanded="true"
+                        >
+                            <div className="grid grid-cols-3 gap-4">
                                 <div className="mb-2">
-                                   
+                                    {/* <label className="block text-gray-700">Mã hồ sơ</label> */}
                                     <Input
-                                        label="Mã số cá nhân"
+                                        label="Mã hồ sơ"
                                         type="text"
-                                        name="citizenID"
-                                        value={newEmployee.citizenID}
-                                        onChange={handleEmployeeInputChange}
+                                        name="applicationID"
+                                        value={maHS}
+                                        // onChange={handleInputChange}
+                                        fullWidth
+                                        isRequired
+                                        disabled
+                                    />
+                                </div>
+                                <div className="mb-2">
+                                    <Autocomplete
+                                        label="Chọn doanh nghiệp"
+                                        name='companyID'
+                                        fullWidth
+                                        isRequired
+                                        onInputChange={handleChangeCompany}
+                                        value={newApplication.companyID}
+                                    >
+                                        {companies.map((com) => (
+                                            <AutocompleteItem key={com.companyID} value={com.companyID}>
+                                                {com.companyName}
+                                            </AutocompleteItem>
+                                        ))}
+                                    </Autocomplete>
+                                </div>
+                                <div className="mb-2">
+
+                                    <Input
+                                        label="Mã số thuế"
+                                        type="text"
+                                        name="taxCode"
+                                        value={newApplication.taxCode}
+                                        onChange={handleInputChange}
+                                        fullWidth
+                                        isRequired
+                                    />
+                                </div>
+                                <div className="mb-2">
+
+                                    <Input
+                                        label="Người nộp hồ sơ"
+                                        type="text"
+
+                                        name="submitterName"
+                                        value={newApplication.submitterName}
+                                        onChange={handleInputChange}
                                         fullWidth
                                         required
                                     />
                                 </div>
                                 <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Họ và tên</label> */}
+
                                     <Input
-                                        label="Họ và tên"
-                                        type="text"
-                                        name="fullName"
-                                        value={newEmployee.fullName}
-                                        onChange={handleEmployeeInputChange}
-                                        fullWidth
-                                        required
-                                    />
-                                </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Ngày sinhh</label> */}
-                                    <Input
-                                        label="Ngày sinh"
                                         type="date"
-                                        name="dateOfBirth"
-                                        value={newEmployee.dateOfBirth}
-                                        onChange={handleEmployeeInputChange}
+                                        label="Ngày nộp hồ sơ"
+
+                                        name="submitDate"
+                                        value={newApplication.submitDate}
+                                        onChange={handleInputChange}
+                                        fullWidth
+                                        required
+                                    />
+                                </div>
+
+                                <Input
+                                    type="hidden"
+                                    name="status"
+                                    value={newApplication.status}
+                                    onChange={handleInputChange}
+                                    fullWidth
+                                    required
+                                />
+
+                                <div className="mb-2">
+
+                                    <Input
+                                        type="email"
+                                        label="Email"
+
+                                        name="email"
+                                        value={newApplication.email}
+                                        onChange={handleInputChange}
                                         fullWidth
                                         required
                                     />
@@ -546,54 +432,187 @@ const employeeStatus = [
                                 <div className="mb-2">
                                     {/* <label className="block text-gray-700">Số điện thoại</label> */}
                                     <Input
-                                        label="Số điện thoại"
                                         type="text"
+
+                                        label="Số điện thoại"
                                         name="phoneNumber"
-                                        value={newEmployee.phoneNumber}
-                                        onChange={handleEmployeeInputChange}
+                                        value={newApplication.phoneNumber}
+                                        onChange={handleInputChange}
                                         fullWidth
                                         required
                                     />
                                 </div>
                                 <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Loại chuyên môn</label> */}
+                                    {/* <label className="block text-gray-700">Số điện thoại</label> */}
+                                    <Input
+                                        type="text"
 
-                                    <Autocomplete
-                                        label="Loại chuyên môn"
-                                        value={newEmployee.licenseType}
-
-                                        onInputChange={handleLicenseTypeChange}
-                                        name='licenseType'
+                                        label="Thời hạn giải quyết"
+                                        name="duration"
+                                        value={newApplication.duration}
+                                        onChange={handleInputChange}
                                         fullWidth
-                                        isRequired
-
-                                    >
-                                        {licenseTypes.map((animal) => (
-                                            <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
-                                                {animal.label}
-                                            </AutocompleteItem>
-                                        ))}
-                                    </Autocomplete>
+                                        required
+                                    />
                                 </div>
                                 <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Loại tuyến đường sắt</label> */}
-                                    <Autocomplete
-                                        label="Loại tuyến đường sắt"
-                                        value={newEmployee.railwayType}
-                                        onInputChange={handleRailwayTypeChange}
+                                    {/* <label className="block text-gray-700">Số điện thoại</label> */}
+                                    <Input
+                                        type="date"
 
-                                        name='railwayType'
+                                        label="Ngày hẹn trả "
+                                        name="returnDate"
+                                        value={newApplication.returnDate}
+                                        onChange={handleInputChange}
                                         fullWidth
-                                        isRequired
-                                    >
-                                        {railwayTypes.map((animal) => (
-                                            <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
-                                                {animal.label}
-                                            </AutocompleteItem>
-                                        ))}
-                                    </Autocomplete>
-
+                                        required
+                                    />
+                                </div>
+                            </div>
+                        </AccordionItem>
+                        <AccordionItem
+                            key="2"
+                            title={<b>Thành phần hồ sơ</b>}
+                            aria-expanded="true"
+                        >
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="mb-2">
+                                    <label className="block text-gray-700">Đơn đề nghị</label>
+                                    {/*<Input
+                                    type="file"
+                                    name="applicationFile"
+                                    onChange={handleFileChange}
+                                    fullWidth
+                                    required
+                                /> */}
+                                    <UploadFile name="applicationFile" setName={setApplicationFile} setBase64Content={setApplicationFileContent} />
+                                </div>
+                                <div className="mb-2">
+                                    <label className="block text-gray-700">Văn bản chứng nhận</label>
                                     {/* <Input
+                                    type="file"
+                                    name="certificationDocument"
+                                    onChange={handleFileChange}
+                                    fullWidth
+                                    required
+                                /> */}
+                                    <UploadFile name="certificationDocument" setName={setCertificationDocument} setBase64Content={setCertificationDocumentContent} />
+                                </div>
+                            </div>
+                            <div className="mb-2">
+                                <h2 className="text-xl font-bold mb-2">Thông tin người lái tàu</h2>
+                                <div className="mb-4 float-start text-center mt-4 mr-4">
+                                    <Image
+                                        isBlurred
+                                        width={256}
+                                        src={newEmployee.avatar ? newEmployee.avatar : "/assets/noimage.jpg"}
+                                        alt="avatar"
+
+                                    />
+                                    <Input
+                                        type="file"
+                                        name={'avatar'}
+                                        onChange={handleFileChange}
+                                        fullWidth
+                                        required
+                                        className='mt-2 w-64'
+
+                                    />
+                                    {/* <button className="bg-green-400 mt-5 text-white px-4 py-2 rounded hover:bg-green-700"> <FontAwesomeIcon icon={faUpload} /> Chọn ảnh </button> */}
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 mb-4">
+
+                                    <div className="mb-2">
+
+                                        <Input
+                                            label="Mã số cá nhân"
+                                            type="text"
+                                            name="citizenID"
+                                            value={newEmployee.citizenID}
+                                            onBlur={handleCheckDuplicate}
+                                            onChange={handleEmployeeInputChange}
+                                            fullWidth
+                                            required
+                                            isRequired
+                                            isInvalid={isDuplicate}
+                                            errorMessage={isDuplicate ? 'Mã số cá nhân đã tồn tại' : ''}
+                                        />
+                                    </div>
+                                    <div className="mb-2">
+                                        {/* <label className="block text-gray-700">Họ và tên</label> */}
+                                        <Input
+                                            label="Họ và tên"
+                                            type="text"
+                                            name="fullName"
+                                            value={newEmployee.fullName}
+                                            onChange={handleEmployeeInputChange}
+                                            fullWidth
+                                            required
+                                        />
+                                    </div>
+                                    <div className="mb-2">
+                                        {/* <label className="block text-gray-700">Ngày sinhh</label> */}
+                                        <Input
+                                            label="Ngày sinh"
+                                            type="date"
+                                            name="dateOfBirth"
+                                            value={newEmployee.dateOfBirth}
+                                            onChange={handleEmployeeInputChange}
+                                            fullWidth
+                                            required
+                                        />
+                                    </div>
+                                    <div className="mb-2">
+                                        {/* <label className="block text-gray-700">Số điện thoại</label> */}
+                                        <Input
+                                            label="Số điện thoại"
+                                            type="text"
+                                            name="phoneNumber"
+                                            value={newEmployee.phoneNumber}
+                                            onChange={handleEmployeeInputChange}
+                                            fullWidth
+                                            required
+                                        />
+                                    </div>
+                                    <div className="mb-2">
+                                        {/* <label className="block text-gray-700">Loại chuyên môn</label> */}
+
+                                        <Autocomplete
+                                            label="Loại chuyên môn"
+                                            value={newEmployee.licenseType}
+
+                                            onInputChange={handleLicenseTypeChange}
+                                            name='licenseType'
+                                            fullWidth
+                                            isRequired
+
+                                        >
+                                            {licenseTypes.map((animal) => (
+                                                <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
+                                                    {animal.label}
+                                                </AutocompleteItem>
+                                            ))}
+                                        </Autocomplete>
+                                    </div>
+                                    <div className="mb-2">
+                                        {/* <label className="block text-gray-700">Loại tuyến đường sắt</label> */}
+                                        <Autocomplete
+                                            label="Loại tuyến đường sắt"
+                                            value={newEmployee.railwayType}
+                                            onInputChange={handleRailwayTypeChange}
+
+                                            name='railwayType'
+                                            fullWidth
+                                            isRequired
+                                        >
+                                            {railwayTypes.map((animal) => (
+                                                <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
+                                                    {animal.label}
+                                                </AutocompleteItem>
+                                            ))}
+                                        </Autocomplete>
+
+                                        {/* <Input
                                                 type="text"
                                                 name="RailwayType"
                                                 // value={newEmployee.testVehicleCode}
@@ -601,59 +620,59 @@ const employeeStatus = [
                                                 fullWidth
                                                 required
                                             /> */}
-                                </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Đơn vị công tác</label> */}
-                                    <Input
-                                        label="Đơn vị công tác"
-                                        type="text"
-                                        name="companyName"
-                                        value={companyName}
-                                        onChange={handleEmployeeInputChange}
-                                        fullWidth
-                                        required
-                                    />
+                                    </div>
+                                    <div className="mb-2">
+                                        {/* <label className="block text-gray-700">Đơn vị công tác</label> */}
+                                        <Input
+                                            label="Đơn vị công tác"
+                                            type="text"
+                                            name="companyName"
+                                            value={companyName}
+                                            onChange={handleEmployeeInputChange}
+                                            fullWidth
+                                            required
+                                        />
 
-                                </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Trình độ</label> */}
-                                    <Input
-                                        label="Trình độ"
-                                        type="text"
-                                        name="trainingLevel"
-                                        value={newEmployee.trainingLevel}
-                                        onChange={handleEmployeeInputChange}
-                                        fullWidth
-                                        required
-                                    />
-                                </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Số năm làm phụ tàu</label> */}
-                                    <Input
-                                        label="Số tháng làm phụ tàu"
-                                        type="text"
-                                        name="experienceMonths"
-                                        value={newEmployee.experienceMonths}
-                                        onChange={handleEmployeeInputChange}
-                                        fullWidth
-                                        required
-                                    />
-                                </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Phương tiện sát hạch</label> */}
-                                    <Input
-                                    label="Phương tiện sát hạch"
-                                        type="text"
-                                        name="testVehicleCode"
-                                        value={newEmployee.testVehicleCode}
-                                        onChange={handleEmployeeInputChange}
-                                        fullWidth
-                                        required
-                                    />
-                                </div>
-                                <div className="">
-                                    <label className="block text-gray-700">Bản khai cá nhân</label>
-                                    {/* <Input
+                                    </div>
+                                    <div className="mb-2">
+                                        {/* <label className="block text-gray-700">Trình độ</label> */}
+                                        <Input
+                                            label="Trình độ"
+                                            type="text"
+                                            name="trainingLevel"
+                                            value={newEmployee.trainingLevel}
+                                            onChange={handleEmployeeInputChange}
+                                            fullWidth
+                                            required
+                                        />
+                                    </div>
+                                    <div className="mb-2">
+                                        {/* <label className="block text-gray-700">Số năm làm phụ tàu</label> */}
+                                        <Input
+                                            label="Số tháng làm phụ tàu"
+                                            type="text"
+                                            name="experienceMonths"
+                                            value={newEmployee.experienceMonths}
+                                            onChange={handleEmployeeInputChange}
+                                            fullWidth
+                                            required
+                                        />
+                                    </div>
+                                    <div className="mb-2">
+                                        {/* <label className="block text-gray-700">Phương tiện sát hạch</label> */}
+                                        <Input
+                                            label="Phương tiện sát hạch"
+                                            type="text"
+                                            name="testVehicleCode"
+                                            value={newEmployee.testVehicleCode}
+                                            onChange={handleEmployeeInputChange}
+                                            fullWidth
+                                            required
+                                        />
+                                    </div>
+                                    <div className="">
+                                        <label className="block text-gray-700">Bản khai cá nhân</label>
+                                        {/* <Input
 
                                                 type="file"
                                                 name={'personalStatement'}
@@ -661,43 +680,43 @@ const employeeStatus = [
                                                 fullWidth
                                                 required
                                             /> */}
-                                    <UploadFile name="personalStatement" setName={setPersonalStatement} setBase64Content={setPersonalStatementContent} />
-                                </div>
-                                <div className="">
-                                    <label className="block text-gray-700">Giây khám sức khỏe</label>
-                                    {/* <Input
+                                        <UploadFile name="personalStatement" setName={setPersonalStatement} setBase64Content={setPersonalStatementContent} />
+                                    </div>
+                                    <div className="">
+                                        <label className="block text-gray-700">Giây khám sức khỏe</label>
+                                        {/* <Input
                                                 type="file"
                                                 name="healthCertificate"
                                                 onChange={handleEmployeeFileChange}
                                                 fullWidth
                                                 required
                                             /> */}
-                                    <UploadFile name="healthCertificate" setName={setHealthCertificate} setBase64Content={setHealthCertificateContent} />
+                                        <UploadFile name="healthCertificate" setName={setHealthCertificate} setBase64Content={setHealthCertificateContent} />
+                                    </div>
+                                    <div className="mb-2">
+                                        {/* <label className="block text-gray-700">Loại tuyến đường sắt</label> */}
+                                        <Autocomplete
+                                            label="Tình trạng công tác"
+                                            value={newEmployee.status}
+                                            onInputChange={handleRailwayTypeChange}
+                                            defaultSelectedKey={"Đang công tác"}
+                                            name='status'
+                                            fullWidth
+
+                                        >
+                                            {employeeStatus.map((animal) => (
+                                                <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
+                                                    {animal.label}
+                                                </AutocompleteItem>
+                                            ))}
+                                        </Autocomplete>
+                                    </div>
                                 </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Loại tuyến đường sắt</label> */}
-                                    <Autocomplete
-                                        label="Tình trạng công tác"
-                                        value={newEmployee.status}
-                                        onInputChange={handleRailwayTypeChange}
-                                        defaultSelectedKey={"Đang công tác"}
-                                        name='status'
-                                        fullWidth
-                                        
-                                    >
-                                        {employeeStatus.map((animal) => (
-                                            <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
-                                                {animal.label}
-                                            </AutocompleteItem>
-                                        ))}
-                                    </Autocomplete>
-                                </div>
-                            </div>
-                            {/* <Button onClick={onOpen} className="bg-green-500 text-white mb-3 px-4 py-2 rounded hover:bg-green-700">
+                                {/* <Button onClick={onOpen} className="bg-green-500 text-white mb-3 px-4 py-2 rounded hover:bg-green-700">
                                 Thêm nhân viên
                             </Button> */}
 
-                            {/* <table className="min-w-full bg-white">
+                                {/* <table className="min-w-full bg-white">
                                 <thead>
                                     <tr>
                                         <th className="py-2">Họ tên</th>
@@ -722,129 +741,129 @@ const employeeStatus = [
                                 </tbody>
                             </table> */}
 
-                        </div>
-                    </AccordionItem>
-                </Accordion>
-            </div>
+                            </div>
+                        </AccordionItem>
+                    </Accordion>
+                </div>
 
-            <Modal
-                backdrop="opaque"
-                size='5xl'
-                isOpen={isOpen}
-                onOpenChange={onOpenChange}
-                classNames={{
-                    backdrop: "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20"
-                }}
-            >
-                <ModalContent>
-                    {(onClose) => (
-                        <>
-                            <ModalHeader className="flex flex-col gap-1">Thêm mới nhân viên</ModalHeader>
-                            <ModalBody>
-                                <form onSubmit={handleAddEmployee}>
-                                    <div className="mb-2 float-start text-center mr-5">
-                                        <Image
-                                            isBlurred
-                                            width={250}
-                                            src={newEmployee.avatar ? newEmployee.avatar : "/assets/noimage.jpg"}
-                                            alt="avatar"
+                <Modal
+                    backdrop="opaque"
+                    size='5xl'
+                    isOpen={isOpen}
+                    onOpenChange={onOpenChange}
+                    classNames={{
+                        backdrop: "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20"
+                    }}
+                >
+                    <ModalContent>
+                        {(onClose) => (
+                            <>
+                                <ModalHeader className="flex flex-col gap-1">Thêm mới nhân viên</ModalHeader>
+                                <ModalBody>
+                                    <form onSubmit={handleAddEmployee}>
+                                        <div className="mb-2 float-start text-center mr-5">
+                                            <Image
+                                                isBlurred
+                                                width={250}
+                                                src={newEmployee.avatar ? newEmployee.avatar : "/assets/noimage.jpg"}
+                                                alt="avatar"
 
-                                        />
-                                        <Input
-                                            type="file"
-                                            name={'avatar'}
-                                            onChange={handleFileChange}
-                                            fullWidth
-                                            required
-                                            className='mt-2'
-                                        />
-                                        {/* <button className="bg-green-400 mt-5 text-white px-4 py-2 rounded hover:bg-green-700"> <FontAwesomeIcon icon={faUpload} /> Chọn ảnh </button> */}
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4 mb-4">
-
-                                        <div className="mb-2">
-                                            <label className="block text-gray-700">Mã số cá nhân</label>
+                                            />
                                             <Input
-                                                type="text"
-                                                name="citizenID"
-                                                value={newEmployee.citizenID}
-                                                onChange={handleEmployeeInputChange}
+                                                type="file"
+                                                name={'avatar'}
+                                                onChange={handleFileChange}
                                                 fullWidth
                                                 required
+                                                className='mt-2'
                                             />
+                                            {/* <button className="bg-green-400 mt-5 text-white px-4 py-2 rounded hover:bg-green-700"> <FontAwesomeIcon icon={faUpload} /> Chọn ảnh </button> */}
                                         </div>
-                                        <div className="mb-2">
-                                            <label className="block text-gray-700">Họ và tên</label>
-                                            <Input
-                                                type="text"
-                                                name="fullName"
-                                                value={newEmployee.fullName}
-                                                onChange={handleEmployeeInputChange}
-                                                fullWidth
-                                                required
-                                            />
-                                        </div>
-                                        <div className="mb-2">
-                                            <label className="block text-gray-700">Ngày sinhh</label>
-                                            <Input
-                                                type="date"
-                                                name="dateOfBirth"
-                                                value={newEmployee.dateOfBirth}
-                                                onChange={handleEmployeeInputChange}
-                                                fullWidth
-                                                required
-                                            />
-                                        </div>
-                                        <div className="mb-2">
-                                            <label className="block text-gray-700">Số điện thoại</label>
-                                            <Input
-                                                type="text"
-                                                name="phoneNumber"
-                                                value={newEmployee.phoneNumber}
-                                                onChange={handleEmployeeInputChange}
-                                                fullWidth
-                                                required
-                                            />
-                                        </div>
-                                        <div className="mb-2">
-                                            <label className="block text-gray-700">Loại chuyên môn</label>
+                                        <div className="grid grid-cols-2 gap-4 mb-4">
 
-                                            <Autocomplete
-                                                label="Loại chuyên môn"
-                                                value={newEmployee.licenseType}
+                                            <div className="mb-2">
+                                                <label className="block text-gray-700">Mã số cá nhân</label>
+                                                <Input
+                                                    type="text"
+                                                    name="citizenID"
+                                                    value={newEmployee.citizenID}
+                                                    onChange={handleEmployeeInputChange}
+                                                    fullWidth
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="mb-2">
+                                                <label className="block text-gray-700">Họ và tên</label>
+                                                <Input
+                                                    type="text"
+                                                    name="fullName"
+                                                    value={newEmployee.fullName}
+                                                    onChange={handleEmployeeInputChange}
+                                                    fullWidth
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="mb-2">
+                                                <label className="block text-gray-700">Ngày sinhh</label>
+                                                <Input
+                                                    type="date"
+                                                    name="dateOfBirth"
+                                                    value={newEmployee.dateOfBirth}
+                                                    onChange={handleEmployeeInputChange}
+                                                    fullWidth
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="mb-2">
+                                                <label className="block text-gray-700">Số điện thoại</label>
+                                                <Input
+                                                    type="text"
+                                                    name="phoneNumber"
+                                                    value={newEmployee.phoneNumber}
+                                                    onChange={handleEmployeeInputChange}
+                                                    fullWidth
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="mb-2">
+                                                <label className="block text-gray-700">Loại chuyên môn</label>
 
-                                                onInputChange={handleLicenseTypeChange}
-                                                name='licenseType'
-                                                fullWidth
-                                                isRequired
+                                                <Autocomplete
+                                                    label="Loại chuyên môn"
+                                                    value={newEmployee.licenseType}
 
-                                            >
-                                                {licenseTypes.map((animal) => (
-                                                    <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
-                                                        {animal.label}
-                                                    </AutocompleteItem>
-                                                ))}
-                                            </Autocomplete>
-                                        </div>
-                                        <div className="mb-2">
-                                            <label className="block text-gray-700">Loại tuyến đường sắt</label>
-                                            <Autocomplete
-                                                label="Loại tuyến đường sắt"
-                                                value={newEmployee.railwayType}
-                                                onInputChange={handleRailwayTypeChange}
+                                                    onInputChange={handleLicenseTypeChange}
+                                                    name='licenseType'
+                                                    fullWidth
+                                                    isRequired
 
-                                                name='railwayType'
-                                                fullWidth
-                                                isRequired
-                                            >
-                                                {railwayTypes.map((animal) => (
-                                                    <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
-                                                        {animal.label}
-                                                    </AutocompleteItem>
-                                                ))}
-                                            </Autocomplete>
+                                                >
+                                                    {licenseTypes.map((animal) => (
+                                                        <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
+                                                            {animal.label}
+                                                        </AutocompleteItem>
+                                                    ))}
+                                                </Autocomplete>
+                                            </div>
+                                            <div className="mb-2">
+                                                <label className="block text-gray-700">Loại tuyến đường sắt</label>
+                                                <Autocomplete
+                                                    label="Loại tuyến đường sắt"
+                                                    value={newEmployee.railwayType}
+                                                    onInputChange={handleRailwayTypeChange}
 
-                                            {/* <Input
+                                                    name='railwayType'
+                                                    fullWidth
+                                                    isRequired
+                                                >
+                                                    {railwayTypes.map((animal) => (
+                                                        <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
+                                                            {animal.label}
+                                                        </AutocompleteItem>
+                                                    ))}
+                                                </Autocomplete>
+
+                                                {/* <Input
                                                 type="text"
                                                 name="RailwayType"
                                                 // value={newEmployee.testVehicleCode}
@@ -852,55 +871,55 @@ const employeeStatus = [
                                                 fullWidth
                                                 required
                                             /> */}
-                                        </div>
-                                        <div className="mb-2">
-                                            <label className="block text-gray-700">Đơn vị công tác</label>
-                                            <Input
-                                                type="text"
-                                                name="companyName"
-                                                value={companyName}
-                                                onChange={handleEmployeeInputChange}
-                                                fullWidth
-                                                required
-                                            />
+                                            </div>
+                                            <div className="mb-2">
+                                                <label className="block text-gray-700">Đơn vị công tác</label>
+                                                <Input
+                                                    type="text"
+                                                    name="companyName"
+                                                    value={companyName}
+                                                    onChange={handleEmployeeInputChange}
+                                                    fullWidth
+                                                    required
+                                                />
 
-                                        </div>
-                                        <div className="mb-2">
-                                            <label className="block text-gray-700">Trình độ</label>
-                                            <Input
-                                                type="text"
-                                                name="trainingLevel"
-                                                value={newEmployee.trainingLevel}
-                                                onChange={handleEmployeeInputChange}
-                                                fullWidth
-                                                required
-                                            />
-                                        </div>
-                                        <div className="mb-2">
-                                            <label className="block text-gray-700">Số năm làm phụ tàu</label>
-                                            <Input
-                                                type="text"
-                                                name="experienceMonths"
-                                                value={newEmployee.experienceMonths}
-                                                onChange={handleEmployeeInputChange}
-                                                fullWidth
-                                                required
-                                            />
-                                        </div>
-                                        <div className="mb-2">
-                                            <label className="block text-gray-700">Phương tiện sát hạch</label>
-                                            <Input
-                                                type="text"
-                                                name="testVehicleCode"
-                                                value={newEmployee.testVehicleCode}
-                                                onChange={handleEmployeeInputChange}
-                                                fullWidth
-                                                required
-                                            />
-                                        </div>
-                                        <div className="mb-2">
-                                            <label className="block text-gray-700">Bản khai cá nhân</label>
-                                            {/* <Input
+                                            </div>
+                                            <div className="mb-2">
+                                                <label className="block text-gray-700">Trình độ</label>
+                                                <Input
+                                                    type="text"
+                                                    name="trainingLevel"
+                                                    value={newEmployee.trainingLevel}
+                                                    onChange={handleEmployeeInputChange}
+                                                    fullWidth
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="mb-2">
+                                                <label className="block text-gray-700">Số năm làm phụ tàu</label>
+                                                <Input
+                                                    type="text"
+                                                    name="experienceMonths"
+                                                    value={newEmployee.experienceMonths}
+                                                    onChange={handleEmployeeInputChange}
+                                                    fullWidth
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="mb-2">
+                                                <label className="block text-gray-700">Phương tiện sát hạch</label>
+                                                <Input
+                                                    type="text"
+                                                    name="testVehicleCode"
+                                                    value={newEmployee.testVehicleCode}
+                                                    onChange={handleEmployeeInputChange}
+                                                    fullWidth
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="mb-2">
+                                                <label className="block text-gray-700">Bản khai cá nhân</label>
+                                                {/* <Input
 
                                                 type="file"
                                                 name={'personalStatement'}
@@ -908,35 +927,35 @@ const employeeStatus = [
                                                 fullWidth
                                                 required
                                             /> */}
-                                            <UploadFile name="personalStatement" setName={setPersonalStatement} setBase64Content={setPersonalStatementContent} />
-                                        </div>
-                                        <div className="mb-2">
-                                            <label className="block text-gray-700">Giây khám sức khỏe</label>
-                                            {/* <Input
+                                                <UploadFile name="personalStatement" setName={setPersonalStatement} setBase64Content={setPersonalStatementContent} />
+                                            </div>
+                                            <div className="mb-2">
+                                                <label className="block text-gray-700">Giây khám sức khỏe</label>
+                                                {/* <Input
                                                 type="file"
                                                 name="healthCertificate"
                                                 onChange={handleEmployeeFileChange}
                                                 fullWidth
                                                 required
                                             /> */}
-                                            <UploadFile name="healthCertificate" setName={setHealthCertificate} setBase64Content={setHealthCertificateContent} />
+                                                <UploadFile name="healthCertificate" setName={setHealthCertificate} setBase64Content={setHealthCertificateContent} />
+                                            </div>
                                         </div>
-                                    </div>
 
-                                </form>
-                            </ModalBody>
-                            <ModalFooter>
-                                <Button color="danger" variant="light" onPress={onClose}>
-                                    Đóng
-                                </Button>
-                                <Button color="primary" onPress={handleAddEmployee}>
-                                    Lưu lại
-                                </Button>
-                            </ModalFooter>
-                        </>
-                    )}
-                </ModalContent>
-            </Modal>
-        </div>
-    );
-}
+                                    </form>
+                                </ModalBody>
+                                <ModalFooter>
+                                    <Button color="danger" variant="light" onPress={onClose}>
+                                        Đóng
+                                    </Button>
+                                    <Button color="primary" onPress={handleAddEmployee}>
+                                        Lưu lại
+                                    </Button>
+                                </ModalFooter>
+                            </>
+                        )}
+                    </ModalContent>
+                </Modal>
+            </div>
+        );
+    }

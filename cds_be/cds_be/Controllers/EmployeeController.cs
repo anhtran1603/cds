@@ -90,6 +90,12 @@ namespace cds_be.Controllers
 
             return NoContent();
         }
+        [HttpGet("check-duplicate/{citizenID}")]
+        public async Task<ActionResult<bool>> CheckDuplicateCitizenID(string citizenID)
+        {
+            var exists = await _context.Employees.AnyAsync(e => e.CitizenID == citizenID);
+            return exists;
+        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmployee(int id)
