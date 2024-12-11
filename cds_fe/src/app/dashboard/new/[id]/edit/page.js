@@ -333,6 +333,8 @@ export default function Page() {
             reader.onerror = (error) => reject(error);
         });
     };
+    console.log(companyId);
+    
     return (
         <div className="container mx-auto p-4">
             < div className="flex items-center justify-between ">
@@ -387,7 +389,7 @@ export default function Page() {
                                     defaultItems={companies}
                                     // defaultInputValue={"Công ty hồng thái"}
                                     onInputChange={handleChangeCompany}
-                                    defaultSelectedKey={companyId+ ""}
+                                    defaultSelectedKey={"1"}
 
                                 >
                                     {(item) => <AutocompleteItem key={item.companyID} value={item.value} textValue={item.companyName}>{item.companyName}</AutocompleteItem>}
