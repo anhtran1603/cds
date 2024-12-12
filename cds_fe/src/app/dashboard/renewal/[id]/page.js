@@ -381,6 +381,9 @@ export default function Page() {
         if (status === "Đã xử lý" && user?.roleId === 3) {
             return (
                 <>
+                <Button type="submit" onClick={setIsReason(true)} className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-700">
+                    Từ chối cấp lại giấy phép
+                </Button>
                     <Button type="submit" onClick={handleXetDuyet} className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700">
                         Duyệt hồ sơ và cấp lại giấy phép mới
                     </Button>
@@ -920,8 +923,8 @@ export default function Page() {
 
                                         newApplication.status === "Đang xử lý" ?
                                             <>
-                                                <label className="block text-gray-700">Thông báo sát hạch (Nếu có)</label>
-                                                <UploadFile name='examinationPlan' setName={setExaminationPlan} setBase64Content={setExaminationPlanContent} />
+                                                
+                                                <UploadFile title="Thông báo sát hạch (Nếu có)" fileName={newApplication.examinationPlan} name='examinationPlan' setName={setExaminationPlan} setBase64Content={setExaminationPlanContent} />
 
                                             </> :
                                             <Input
@@ -948,8 +951,8 @@ export default function Page() {
 
                                         newApplication.status === "Đang xử lý" ?
                                             <>
-                                                <label className="block text-gray-700">Kết quả sát hạch (Nếu có)</label>
-                                                <UploadFile name='result' setName={setResult} setBase64Content={setResultContent} />
+                                                <label className="block text-gray-700"></label>
+                                                <UploadFile fileName="Kết quả sát hạch (Nếu có)" title="Kết quả sát hạch (Nếu có)" name='result' setName={setResult} setBase64Content={setResultContent} />
                                             </> :
                                             <Input
                                                 label="Kết quả sát hạch (Nếu có)"

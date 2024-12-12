@@ -46,20 +46,20 @@ export default function Home() {
     }
 
     try {
-      const currentUsers = await getUsers();
-      console.log(currentUsers);
-      const userFound = currentUsers.find(
-        user => 
-          user.userName.toLowerCase() === username.toLowerCase() && 
-          user.passwordHash === password
-      );
-      console.log("abc", userFound);
+      // const currentUsers = await getUsers();
+      // console.log(currentUsers);
+      // const userFound = currentUsers.find(
+      //   user => 
+      //     user.userName.toLowerCase() === username.toLowerCase() && 
+      //     user.passwordHash === password
+      // );
+      // console.log("abc", userFound);
 
-      if (!userFound) {
-        setError("Tài khoản hoặc mật khẩu không chính xác");
-        setLoading(false);
-        return;
-      }
+      // if (!userFound) {
+      //   setError("Tài khoản hoặc mật khẩu không chính xác");
+      //   setLoading(false);
+      //   return;
+      // }
 
       const response = await Login(username, password);
       if (!response?.user) {
@@ -74,9 +74,9 @@ export default function Home() {
       setLoading(false);
     }
   };
-  if (loading) {
-    return <div>Loading...</div>
-  }
+  // if (loading) {
+  //   return <div>Loading...</div>
+  // }
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 custom-bg">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-lg">

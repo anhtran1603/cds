@@ -1,13 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react';
 import { Input, Accordion, AccordionItem, Autocomplete, AutocompleteItem, Image, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
-import { faEye, faUpload } from "@fortawesome/free-solid-svg-icons"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { addApplication, addEmployee, checkDuplicateCitizenID, getCompanies } from '../../../helper/api';
 import UploadFile from '../../../components/uploadFile';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-import { set } from 'date-fns';
 
 export default function Page() {
     const router = useRouter();
@@ -143,9 +140,7 @@ export default function Page() {
             const data = await getCompanies();
             setCompanies(data);
         }
-
         getData()
-
     }, [getCompanies]);
 
     const handleCheckDuplicate = async (e) => {
@@ -445,7 +440,7 @@ export default function Page() {
                                 <div className="mb-2">
                                     {/* <label className="block text-gray-700">Số điện thoại</label> */}
                                     <Input
-                                        type="text"
+                                        type="number"
 
                                         label="Thời hạn giải quyết"
                                         name="duration"
@@ -477,7 +472,7 @@ export default function Page() {
                         >
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="mb-2">
-                                    <label className="block text-gray-700">Đơn đề nghị</label>
+                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
                                     {/*<Input
                                     type="file"
                                     name="applicationFile"
@@ -485,10 +480,10 @@ export default function Page() {
                                     fullWidth
                                     required
                                 /> */}
-                                    <UploadFile name="applicationFile" setName={setApplicationFile} setBase64Content={setApplicationFileContent} />
+                                    <UploadFile fileName ={newApplication.applicationFile} title="Đơn đề nghị" isRequired={true} name="applicationFile" setName={setApplicationFile} setBase64Content={setApplicationFileContent} />
                                 </div>
                                 <div className="mb-2">
-                                    <label className="block text-gray-700">Văn bản chứng nhận</label>
+                                    {/* <label className="block text-gray-700">Văn bản chứng nhận</label> */}
                                     {/* <Input
                                     type="file"
                                     name="certificationDocument"
@@ -496,7 +491,7 @@ export default function Page() {
                                     fullWidth
                                     required
                                 /> */}
-                                    <UploadFile name="certificationDocument" setName={setCertificationDocument} setBase64Content={setCertificationDocumentContent} />
+                                    <UploadFile title ="Văn bản chứng nhận" isRequired={true} fileName={newApplication.certificationDocument}  name="certificationDocument" setName={setCertificationDocument} setBase64Content={setCertificationDocumentContent} />
                                 </div>
                             </div>
                             <div className="mb-2">
@@ -650,7 +645,7 @@ export default function Page() {
                                         {/* <label className="block text-gray-700">Số năm làm phụ tàu</label> */}
                                         <Input
                                             label="Số tháng làm phụ tàu"
-                                            type="text"
+                                            type="number"
                                             name="experienceMonths"
                                             value={newEmployee.experienceMonths}
                                             onChange={handleEmployeeInputChange}
@@ -671,28 +666,21 @@ export default function Page() {
                                         />
                                     </div>
                                     <div className="">
-                                        <label className="block text-gray-700">Bản khai cá nhân</label>
-                                        {/* <Input
-
-                                                type="file"
-                                                name={'personalStatement'}
-                                                onChange={handleEmployeeFileChange}
-                                                fullWidth
-                                                required
-                                            /> */}
-                                        <UploadFile name="personalStatement" setName={setPersonalStatement} setBase64Content={setPersonalStatementContent} />
-                                    </div>
-                                    <div className="">
-                                        <label className="block text-gray-700">Giây khám sức khỏe</label>
-                                        {/* <Input
+                                    {/* <label className="block text-gray-700">Bản khai cá nhân</label> */}
+                                
+                                    <UploadFile title="Bản khai cá nhân" fileName={newEmployee.personalStatement} isRequired={true} name="personalStatement" setName={setPersonalStatement} setBase64Content={setPersonalStatementContent} />
+                                </div>
+                                <div className="">
+                        
+                                    {/* <Input
                                                 type="file"
                                                 name="healthCertificate"
                                                 onChange={handleEmployeeFileChange}
                                                 fullWidth
                                                 required
                                             /> */}
-                                        <UploadFile name="healthCertificate" setName={setHealthCertificate} setBase64Content={setHealthCertificateContent} />
-                                    </div>
+                                    <UploadFile title="Giấy khám sức khỏe" fileName={newEmployee.healthCertificate} isRequired={true}  name="healthCertificate" setName={setHealthCertificate} setBase64Content={setHealthCertificateContent} />
+                                </div>
                                     <div className="mb-2">
                                         {/* <label className="block text-gray-700">Loại tuyến đường sắt</label> */}
                                         <Autocomplete
@@ -746,216 +734,7 @@ export default function Page() {
                     </Accordion>
                 </div>
 
-                <Modal
-                    backdrop="opaque"
-                    size='5xl'
-                    isOpen={isOpen}
-                    onOpenChange={onOpenChange}
-                    classNames={{
-                        backdrop: "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20"
-                    }}
-                >
-                    <ModalContent>
-                        {(onClose) => (
-                            <>
-                                <ModalHeader className="flex flex-col gap-1">Thêm mới nhân viên</ModalHeader>
-                                <ModalBody>
-                                    <form onSubmit={handleAddEmployee}>
-                                        <div className="mb-2 float-start text-center mr-5">
-                                            <Image
-                                                isBlurred
-                                                width={250}
-                                                src={newEmployee.avatar ? newEmployee.avatar : "/assets/noimage.jpg"}
-                                                alt="avatar"
-
-                                            />
-                                            <Input
-                                                type="file"
-                                                name={'avatar'}
-                                                onChange={handleFileChange}
-                                                fullWidth
-                                                required
-                                                className='mt-2'
-                                            />
-                                            {/* <button className="bg-green-400 mt-5 text-white px-4 py-2 rounded hover:bg-green-700"> <FontAwesomeIcon icon={faUpload} /> Chọn ảnh </button> */}
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4 mb-4">
-
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Mã số cá nhân</label>
-                                                <Input
-                                                    type="text"
-                                                    name="citizenID"
-                                                    value={newEmployee.citizenID}
-                                                    onChange={handleEmployeeInputChange}
-                                                    fullWidth
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Họ và tên</label>
-                                                <Input
-                                                    type="text"
-                                                    name="fullName"
-                                                    value={newEmployee.fullName}
-                                                    onChange={handleEmployeeInputChange}
-                                                    fullWidth
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Ngày sinhh</label>
-                                                <Input
-                                                    type="date"
-                                                    name="dateOfBirth"
-                                                    value={newEmployee.dateOfBirth}
-                                                    onChange={handleEmployeeInputChange}
-                                                    fullWidth
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Số điện thoại</label>
-                                                <Input
-                                                    type="text"
-                                                    name="phoneNumber"
-                                                    value={newEmployee.phoneNumber}
-                                                    onChange={handleEmployeeInputChange}
-                                                    fullWidth
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Loại chuyên môn</label>
-
-                                                <Autocomplete
-                                                    label="Loại chuyên môn"
-                                                    value={newEmployee.licenseType}
-
-                                                    onInputChange={handleLicenseTypeChange}
-                                                    name='licenseType'
-                                                    fullWidth
-                                                    isRequired
-
-                                                >
-                                                    {licenseTypes.map((animal) => (
-                                                        <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
-                                                            {animal.label}
-                                                        </AutocompleteItem>
-                                                    ))}
-                                                </Autocomplete>
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Loại tuyến đường sắt</label>
-                                                <Autocomplete
-                                                    label="Loại tuyến đường sắt"
-                                                    value={newEmployee.railwayType}
-                                                    onInputChange={handleRailwayTypeChange}
-
-                                                    name='railwayType'
-                                                    fullWidth
-                                                    isRequired
-                                                >
-                                                    {railwayTypes.map((animal) => (
-                                                        <AutocompleteItem key={animal.value} value={animal.value} textValue={animal.label}>
-                                                            {animal.label}
-                                                        </AutocompleteItem>
-                                                    ))}
-                                                </Autocomplete>
-
-                                                {/* <Input
-                                                type="text"
-                                                name="RailwayType"
-                                                // value={newEmployee.testVehicleCode}
-                                                onChange={handleEmployeeInputChange}
-                                                fullWidth
-                                                required
-                                            /> */}
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Đơn vị công tác</label>
-                                                <Input
-                                                    type="text"
-                                                    name="companyName"
-                                                    value={companyName}
-                                                    onChange={handleEmployeeInputChange}
-                                                    fullWidth
-                                                    required
-                                                />
-
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Trình độ</label>
-                                                <Input
-                                                    type="text"
-                                                    name="trainingLevel"
-                                                    value={newEmployee.trainingLevel}
-                                                    onChange={handleEmployeeInputChange}
-                                                    fullWidth
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Số năm làm phụ tàu</label>
-                                                <Input
-                                                    type="text"
-                                                    name="experienceMonths"
-                                                    value={newEmployee.experienceMonths}
-                                                    onChange={handleEmployeeInputChange}
-                                                    fullWidth
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Phương tiện sát hạch</label>
-                                                <Input
-                                                    type="text"
-                                                    name="testVehicleCode"
-                                                    value={newEmployee.testVehicleCode}
-                                                    onChange={handleEmployeeInputChange}
-                                                    fullWidth
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Bản khai cá nhân</label>
-                                                {/* <Input
-
-                                                type="file"
-                                                name={'personalStatement'}
-                                                onChange={handleEmployeeFileChange}
-                                                fullWidth
-                                                required
-                                            /> */}
-                                                <UploadFile name="personalStatement" setName={setPersonalStatement} setBase64Content={setPersonalStatementContent} />
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Giây khám sức khỏe</label>
-                                                {/* <Input
-                                                type="file"
-                                                name="healthCertificate"
-                                                onChange={handleEmployeeFileChange}
-                                                fullWidth
-                                                required
-                                            /> */}
-                                                <UploadFile name="healthCertificate" setName={setHealthCertificate} setBase64Content={setHealthCertificateContent} />
-                                            </div>
-                                        </div>
-
-                                    </form>
-                                </ModalBody>
-                                <ModalFooter>
-                                    <Button color="danger" variant="light" onPress={onClose}>
-                                        Đóng
-                                    </Button>
-                                    <Button color="primary" onPress={handleAddEmployee}>
-                                        Lưu lại
-                                    </Button>
-                                </ModalFooter>
-                            </>
-                        )}
-                    </ModalContent>
-                </Modal>
+        
             </div>
         );
     }

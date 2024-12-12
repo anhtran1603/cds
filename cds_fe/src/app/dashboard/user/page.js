@@ -61,6 +61,18 @@ export default function Page() {
         setNewUser({ ...newUser, [name]: value });
     };
 
+    const showAddModal = async (e) => {
+        setNewUser({
+            userID: 0,
+            fullName: '',
+            email: '',
+            phoneNumber: '',
+            roleID: '',
+            userName: '',
+            passwordHash: ''
+        });
+        onOpen()
+    }
     const validateForm = async () => {
         const currentUsers = await getUsers();
 
@@ -68,7 +80,7 @@ export default function Page() {
             user.email.toLowerCase() === newUser.email.toLowerCase() &&
             user.userID !== newUser.userID
         );
-    
+
         const usernameExists = currentUsers.some(user =>
             user.userName === newUser.userName &&
             user.userID !== newUser.userID
@@ -116,7 +128,7 @@ export default function Page() {
             newErrors.phoneNumber = 'Số điện thoại không được để trống';
             isValid = false;
         } else {
-            const phoneRegex = /^[0-9]+$/; 
+            const phoneRegex = /^[0-9]+$/;
             const phoneLengthRegex = /^\d{10}$/;
 
             if (!phoneRegex.test(newUser.phoneNumber)) {
@@ -132,7 +144,7 @@ export default function Page() {
             newErrors.roleID = 'Vai trò không được để trống';
             isValid = false;
         }
-        
+
 
         if (!isEditMode && !newUser.passwordHash.trim()) {
             newErrors.passwordHash = 'Mật khẩu không được để trống';
@@ -158,14 +170,14 @@ export default function Page() {
             try {
                 var rs = await addUser(newUser);
                 if (rs) {
-                    setNewUser({ 
-                        userID: 0, 
-                        fullName: '', 
-                        email: '', 
-                        phoneNumber: '', 
-                        roleID: '', 
-                        userName: '', 
-                        passwordHash: '' 
+                    setNewUser({
+                        userID: 0,
+                        fullName: '',
+                        email: '',
+                        phoneNumber: '',
+                        roleID: '',
+                        userName: '',
+                        passwordHash: ''
                     });
                     await getData();
                     onOpenChange();
@@ -216,19 +228,19 @@ export default function Page() {
             setLoading(true);
             try {
                 const userIdString = newUser.userID.toString();
-                
+
                 const { ...dataToUpdate } = newUser;
-                
+
                 var rs = await updateUser(userIdString, dataToUpdate);
                 if (rs) {
-                    setNewUser({ 
-                        userID: 0, 
-                        fullName: '', 
-                        email: '', 
-                        phoneNumber: '', 
-                        roleID: 0, 
-                        userName: '', 
-                        passwordHash: '' 
+                    setNewUser({
+                        userID: 0,
+                        fullName: '',
+                        email: '',
+                        phoneNumber: '',
+                        roleID: 0,
+                        userName: '',
+                        passwordHash: ''
                     });
                     await getData();
                     onOpenChange();
@@ -301,227 +313,227 @@ export default function Page() {
                 item.fullName,
                 item.email,
                 item.phoneNumber,
-                item.roleID,
+                item.Role?.roleName,
                 item.userName
             ]),
         });
         doc.save('users.pdf');
     };
- 
+
     return (
         <>
             {loading ? (<p>Loading...</p>) :
-            (
-                <div className="container mx-auto p-4">
-                    <h1 className="text-2xl font-bold mb-4">Danh sách người dùng</h1>
-                    <div className="flex justify-between mb-4">
-                        <Input
-                            label="Tìm kiếm"
-                            isClearable
-                            radius="lg"
-                            placeholder="Nhập từ khóa để tìm kiếm..."
-                            startContent={
-                                <SearchIcon className="text-black/50 mb-0.5 dark:text-white/90 text-slate-400 pointer-events-none flex-shrink-0" />
-                            }
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
+                (
+                    <div className="container mx-auto p-4">
+                        <h1 className="text-2xl font-bold mb-4">Danh sách người dùng</h1>
+                        <div className="flex justify-between mb-4">
+                            <Input
+                                label="Tìm kiếm"
+                                isClearable
+                                radius="lg"
+                                placeholder="Nhập từ khóa để tìm kiếm..."
+                                startContent={
+                                    <SearchIcon className="text-black/50 mb-0.5 dark:text-white/90 text-slate-400 pointer-events-none flex-shrink-0" />
+                                }
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
 
-                    <Button size='lg' className='mb-4' color='primary' onClick={onOpen}> 
-                        <FontAwesomeIcon icon={faPlus} /> Thêm mới
-                    </Button>
-                    <Button size='lg' className='mb-4 ml-3 bg-red-400' color='primary' onClick={exportToPDF}> 
-                        <FontAwesomeIcon icon={faDownload} />Export to PDF
-                    </Button>
-                    <Modal
-                        backdrop="opaque"
-                        isOpen={isOpen}
-                        onOpenChange={onOpenChange}
-                        classNames={{
-                            backdrop: "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20"
-                        }}
-                    >
-                        <ModalContent>
-                            {(onClose) => (
-                                <>
-                                    <ModalHeader className="flex flex-col gap-1">
-                                        {isEditMode ? 'Sửa thông tin người dùng' : 'Thêm mới người dùng'}
-                                    </ModalHeader>
-                                    <ModalBody>
-                                        <form onSubmit={handleAddUser}>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Họ và tên<span className='text-red-500'>*</span></label>
-                                                <Input
-                                                    type="text"
-                                                    name="fullName"
-                                                    value={newUser.fullName}
-                                                    onChange={(e) => {
-                                                        handleInputChange(e);
-                                                        setErrors({ ...errors, fullName: '' });
-                                                    }}
-                                                    fullWidth
-                                                    isInvalid={!!errors.fullName}
-                                                    errorMessage={errors.fullName}
-                                                />
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Email<span className='text-red-500'>*</span></label>
-                                                <Input
-                                                    type="email"
-                                                    name="email"
-                                                    value={newUser.email}
-                                                    onChange={(e) => {
-                                                        handleInputChange(e);
-                                                        setErrors({ ...errors, email: '' });
-                                                    }}
-                                                    fullWidth
-                                                    isInvalid={!!errors.email}
-                                                    errorMessage={errors.email}
-                                                />
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Số điện thoại<span className='text-red-500'>*</span></label>
-                                                <Input
-                                                    type="text"
-                                                    name="phoneNumber"
-                                                    value={newUser.phoneNumber}
-                                                    onChange={(e) => {
-                                                        handleInputChange(e);
-                                                        setErrors({ ...errors, phoneNumber: '' });
-                                                    }}
-                                                    fullWidth
-                                                    isInvalid={!!errors.phoneNumber}
-                                                    errorMessage={errors.phoneNumber}
-                                                />
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Vai trò<span className='text-red-500'>*</span></label>
-                                                <Input
-                                                    type="number"
-                                                    min={0}
-                                                    name="roleID"
-                                                    value={newUser.roleID}
-                                                    onChange={(e) => {
-                                                        handleInputChange(e);
-                                                        setErrors({ ...errors, roleID: '' });
-                                                    }}
-                                                    fullWidth
-                                                    isInvalid={!!errors.roleID}
-                                                    errorMessage={errors.roleID}
-                                                />
-                                            </div>
-                                            <div className="mb-2">
-                                                <label className="block text-gray-700">Tên đăng nhập<span className='text-red-500'>*</span></label>
-                                                <Input
-                                                type="text"
-                                                name="userName"
-                                                value={newUser.userName}
-                                                onChange={(e) => {
-                                                    handleInputChange(e);
-                                                    setErrors({ ...errors, userName: '' });
-                                                }}
-                                                fullWidth
-                                                isInvalid={!!errors.userName}
-                                                errorMessage={errors.userName}
-                                            />
-                                            </div>
-                                            {!isEditMode && (
+                        <Button size='lg' className='mb-4' color='primary' onClick={showAddModal}>
+                            <FontAwesomeIcon icon={faPlus} /> Thêm mới
+                        </Button>
+                        <Button size='lg' className='mb-4 ml-3 bg-red-400' color='primary' onClick={exportToPDF}>
+                            <FontAwesomeIcon icon={faDownload} />Export to PDF
+                        </Button>
+                        <Modal
+                            backdrop="opaque"
+                            isOpen={isOpen}
+                            onOpenChange={onOpenChange}
+                            classNames={{
+                                backdrop: "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20"
+                            }}
+                        >
+                            <ModalContent>
+                                {(onClose) => (
+                                    <>
+                                        <ModalHeader className="flex flex-col gap-1">
+                                            {isEditMode ? 'Sửa thông tin người dùng' : 'Thêm mới người dùng'}
+                                        </ModalHeader>
+                                        <ModalBody>
+                                            <form onSubmit={handleAddUser}>
                                                 <div className="mb-2">
-                                                    <label className="block text-gray-700">Mật khẩu<span className='text-red-500'>*</span></label>
+                                                    <label className="block text-gray-700">Họ và tên<span className='text-red-500'>*</span></label>
                                                     <Input
-                                                        type="password"
-                                                        name="passwordHash"
-                                                        value={newUser.passwordHash}
+                                                        type="text"
+                                                        name="fullName"
+                                                        value={newUser.fullName}
                                                         onChange={(e) => {
                                                             handleInputChange(e);
-                                                            setErrors({ ...errors, passwordHash: '' });
+                                                            setErrors({ ...errors, fullName: '' });
                                                         }}
                                                         fullWidth
-                                                        isInvalid={!!errors.passwordHash}
-                                                        errorMessage={errors.passwordHash}
+                                                        isInvalid={!!errors.fullName}
+                                                        errorMessage={errors.fullName}
                                                     />
                                                 </div>
-                                            )}
-                                        </form>
-                                    </ModalBody>
-                                    <ModalFooter>
-                                        <Button color="danger" variant="light" onPress={onClose}>
-                                            Đóng
-                                        </Button>
-                                        <Button color="primary" onPress={isEditMode ? handleUpdateUser : handleAddUser}>
-                                            {isEditMode ? 'Cập nhật' : 'Lưu lại'}
-                                        </Button>
-                                    </ModalFooter>
-                                </>
-                            )}
-                        </ModalContent>
-                    </Modal>
-                    <Table
-                        aria-label="User List"
-                        bottomContent={
-                            <div className="flex w-full justify-center">
-                                <Pagination
-                                    isCompact
-                                    showControls
-                                    showShadow
-                                    color="secondary"
-                                    page={page}
-                                    total={pages}
-                                    onChange={(page) => setPage(page)}
-                                />
-                            </div>
-                        }
-                        classNames={{
-                            wrapper: "min-h-[222px] border border-gray-300 rounded-lg shadow-md",
-                            table: "w-full text-left",
-                            header: "bg-blue-100 text-blue-700",
-                            row: "hover:bg-blue-50",
-                            cell: "p-4 border-b border-gray-200",
-                        }}
-                    >
-                        <TableHeader>
-                            <TableColumn key="fullName">HỌ VÀ TÊN</TableColumn>
-                            <TableColumn key="email">EMAIL</TableColumn>
-                            <TableColumn key="phoneNumber">SỐ ĐIỆN THOẠI</TableColumn>
-                            <TableColumn key="roleID">VAI TRÒ</TableColumn>
-                            <TableColumn key="userName">TÊN ĐĂNG NHẬP</TableColumn>
-                            <TableColumn key="actions">THAO TÁC</TableColumn>
-                        </TableHeader>
-                        <TableBody items={items}>
-                            {(item) => (
-                                <TableRow key={item.userID}>
-                                    <TableCell>{item.fullName}</TableCell>
-                                    <TableCell>{item.email}</TableCell>
-                                    <TableCell>{item.phoneNumber}</TableCell>
-                                    <TableCell>{item.roleID}</TableCell>
-                                    <TableCell>{item.userName}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                isIconOnly
-                                                color="primary"
-                                                variant="light"
-                                                onClick={() => handleEditUser(item)}
-                                            >
-                                                Edit
+                                                <div className="mb-2">
+                                                    <label className="block text-gray-700">Email<span className='text-red-500'>*</span></label>
+                                                    <Input
+                                                        type="email"
+                                                        name="email"
+                                                        value={newUser.email}
+                                                        onChange={(e) => {
+                                                            handleInputChange(e);
+                                                            setErrors({ ...errors, email: '' });
+                                                        }}
+                                                        fullWidth
+                                                        isInvalid={!!errors.email}
+                                                        errorMessage={errors.email}
+                                                    />
+                                                </div>
+                                                <div className="mb-2">
+                                                    <label className="block text-gray-700">Số điện thoại<span className='text-red-500'>*</span></label>
+                                                    <Input
+                                                        type="text"
+                                                        name="phoneNumber"
+                                                        value={newUser.phoneNumber}
+                                                        onChange={(e) => {
+                                                            handleInputChange(e);
+                                                            setErrors({ ...errors, phoneNumber: '' });
+                                                        }}
+                                                        fullWidth
+                                                        isInvalid={!!errors.phoneNumber}
+                                                        errorMessage={errors.phoneNumber}
+                                                    />
+                                                </div>
+                                                <div className="mb-2">
+                                                    <label className="block text-gray-700">Vai trò<span className='text-red-500'>*</span></label>
+                                                    <Input
+                                                        type="number"
+                                                        min={0}
+                                                        name="roleID"
+                                                        value={newUser.roleID}
+                                                        onChange={(e) => {
+                                                            handleInputChange(e);
+                                                            setErrors({ ...errors, roleID: '' });
+                                                        }}
+                                                        fullWidth
+                                                        isInvalid={!!errors.roleID}
+                                                        errorMessage={errors.roleID}
+                                                    />
+                                                </div>
+                                                <div className="mb-2">
+                                                    <label className="block text-gray-700">Tên đăng nhập<span className='text-red-500'>*</span></label>
+                                                    <Input
+                                                        type="text"
+                                                        name="userName"
+                                                        value={newUser.userName}
+                                                        onChange={(e) => {
+                                                            handleInputChange(e);
+                                                            setErrors({ ...errors, userName: '' });
+                                                        }}
+                                                        fullWidth
+                                                        isInvalid={!!errors.userName}
+                                                        errorMessage={errors.userName}
+                                                    />
+                                                </div>
+                                                {!isEditMode && (
+                                                    <div className="mb-2">
+                                                        <label className="block text-gray-700">Mật khẩu<span className='text-red-500'>*</span></label>
+                                                        <Input
+                                                            type="password"
+                                                            name="passwordHash"
+                                                            value={newUser.passwordHash}
+                                                            onChange={(e) => {
+                                                                handleInputChange(e);
+                                                                setErrors({ ...errors, passwordHash: '' });
+                                                            }}
+                                                            fullWidth
+                                                            isInvalid={!!errors.passwordHash}
+                                                            errorMessage={errors.passwordHash}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </form>
+                                        </ModalBody>
+                                        <ModalFooter>
+                                            <Button color="danger" variant="light" onPress={onClose}>
+                                                Đóng
                                             </Button>
-                                            <Button
-                                                isIconOnly
-                                                color="danger"
-                                                variant="light"
-                                                onClick={() => handleDeleteUser(item.userID)}
-                                            >
-                                                Delete
+                                            <Button color="primary" onPress={isEditMode ? handleUpdateUser : handleAddUser}>
+                                                {isEditMode ? 'Cập nhật' : 'Lưu lại'}
                                             </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            )}
+                                        </ModalFooter>
+                                    </>
+                                )}
+                            </ModalContent>
+                        </Modal>
+                        <Table
+                            aria-label="User List"
+                            bottomContent={
+                                <div className="flex w-full justify-center">
+                                    <Pagination
+                                        isCompact
+                                        showControls
+                                        showShadow
+                                        color="secondary"
+                                        page={page}
+                                        total={pages}
+                                        onChange={(page) => setPage(page)}
+                                    />
+                                </div>
+                            }
+                            classNames={{
+                                wrapper: "min-h-[222px] border border-gray-300 rounded-lg shadow-md",
+                                table: "w-full text-left",
+                                header: "bg-blue-100 text-blue-700",
+                                row: "hover:bg-blue-50",
+                                cell: "p-4 border-b border-gray-200",
+                            }}
+                        >
+                            <TableHeader>
+                                <TableColumn key="fullName">HỌ VÀ TÊN</TableColumn>
+                                <TableColumn key="email">EMAIL</TableColumn>
+                                <TableColumn key="phoneNumber">SỐ ĐIỆN THOẠI</TableColumn>
+                                <TableColumn key="roleID">VAI TRÒ</TableColumn>
+                                <TableColumn key="userName">TÊN ĐĂNG NHẬP</TableColumn>
+                                <TableColumn key="actions">THAO TÁC</TableColumn>
+                            </TableHeader>
+                            <TableBody items={items}>
+                                {(item) => (
+                                    <TableRow key={item.userID}>
+                                        <TableCell>{item.fullName}</TableCell>
+                                        <TableCell>{item.email}</TableCell>
+                                        <TableCell>{item.phoneNumber}</TableCell>
+                                        <TableCell>{item.role?.roleName}</TableCell>
+                                        <TableCell>{item.userName}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    isIconOnly
+                                                    color="primary"
+                                                    variant="light"
+                                                    onClick={() => handleEditUser(item)}
+                                                >
+                                                    Edit
+                                                </Button>
+                                                <Button
+                                                    isIconOnly
+                                                    color="danger"
+                                                    variant="light"
+                                                    onClick={() => handleDeleteUser(item.userID)}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
         </>
     );
 }

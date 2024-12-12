@@ -367,7 +367,6 @@ export default function Page() {
         setNewLicense({ ...newLicense, [name]: value });
     };
 
-
     const renderButton = (status) => {
 
         if (status === "Chờ xử lý" && user?.roleId === 1) {
@@ -421,9 +420,15 @@ export default function Page() {
         if (status === "Đã duyệt" && user?.roleId === 2 && newApplication.appraiser == user?.userId) {
 
             return (
+                <>
                 <Button type="submit" onClick={handleDuyet} className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-700">
                     Xác nhận cấp giấy phép mới
                 </Button>
+                <Button type="submit" onClick={setIsReason(true)} className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700">
+                    Từ chối cấp giấy phép
+                </Button>
+                </>
+                
             )
         }
 
@@ -947,8 +952,8 @@ export default function Page() {
 
                                         newApplication.status === "Đã duyệt" && user?.userId == newApplication.appraiser ?
                                             <>
-                                                <label className="block text-gray-700">Thông báo sát hạch</label>
-                                                <UploadFile name='examinationPlan' setName={setExaminationPlan} setBase64Content={setExaminationPlanContent} />
+                                                {/* <label className="block text-gray-700">Thông báo sát hạch</label> */}
+                                                <UploadFile isRequired={true} filename={newApplication.examinationPlan} title={"Thông báo sát hạch"} name='examinationPlan' setName={setExaminationPlan} setBase64Content={setExaminationPlanContent} />
 
                                             </> :
                                             <Input
@@ -975,8 +980,7 @@ export default function Page() {
 
                                         newApplication.status === "Đã duyệt" && user?.userId == newApplication.appraiser ?
                                             <>
-                                                <label className="block text-gray-700">Kết quả sát hạch</label>
-                                                <UploadFile name='result' setName={setResult} setBase64Content={setResultContent} />
+                                                <UploadFile isRequired={true} filename={newApplication?.result} title="Kết quả sát hạch"  name='result' setName={setResult} setBase64Content={setResultContent} />
                                             </> :
                                             <Input
                                                 label="Kết quả sát hạch"

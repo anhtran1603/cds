@@ -19,7 +19,7 @@ export default function ReasonModal(props) {
         }
         var data = {
             ...application,
-            status: status === 'Đang xử lý' ? "Chờ xử lý" : "Đang xử lý",
+            status: status ===  "Đã duyệt" ? "Bị từ chối" : 'Đang xử lý' ? "Chờ xử lý" : "Đang xử lý",
             reasonRejection: reason
         }
         var rs = await updateApplication(application.applicationID, data);

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace cds_be.Models
 {
@@ -12,6 +13,11 @@ namespace cds_be.Models
         public string PasswordHash { get; set; }
         public int RoleID { get; set; } // Add role for authorization
         public string FullName { get; set; }
+
+        [ForeignKey("RoleID")]
+        public Role? Role { get; set; }
+
+
     }
 
     public class UserLogin

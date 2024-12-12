@@ -338,7 +338,7 @@ export async function updateEmployee(id: string, data: any) {
         throw new Error(errorData.message || 'Failed to fetch data');
     }
 
-    return res.json();
+    return res;
 }
 
 export async function deleteEmployee(id: string) {
@@ -443,7 +443,7 @@ export async function updateLicense(id: string, data: any) {
         throw new Error(errorData.message || 'Failed to fetch data');
     }
 
-    return res.json();
+    return res;
 }
 
 

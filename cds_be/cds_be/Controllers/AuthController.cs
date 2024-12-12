@@ -68,7 +68,7 @@ namespace cds_be.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Users>>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users.Include(e => e.Role).ToListAsync();
         }
 
         [HttpGet("{id}")]

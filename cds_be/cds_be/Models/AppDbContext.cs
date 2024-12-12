@@ -13,5 +13,6 @@ namespace cds_be.Models
             public DbSet<Employee> Employees { get; set; }
             public DbSet<License> Licenses { get; set; }
             public DbSet<Approval> Approvals { get; set; }
+            public DbSet<Role> Roles { get; set; }
     }   
 }
