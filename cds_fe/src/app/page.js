@@ -46,30 +46,12 @@ export default function Home() {
     }
 
     try {
-      // const currentUsers = await getUsers();
-      // console.log(currentUsers);
-      // const userFound = currentUsers.find(
-      //   user => 
-      //     user.userName.toLowerCase() === username.toLowerCase() && 
-      //     user.passwordHash === password
-      // );
-      // console.log("abc", userFound);
-
-      // if (!userFound) {
-      //   setError("Tài khoản hoặc mật khẩu không chính xác");
-      //   setLoading(false);
-      //   return;
-      // }
-
       const response = await Login(username, password);
-      if (!response?.user) {
-        throw new Error("Đăng nhập thất bại!");
-      } else {
-        localStorage.setItem("user", JSON.stringify(response.user));
-        router.push("/dashboard");
-      }
+      
+      localStorage.setItem("user", JSON.stringify(response.user));
+      router.push("/dashboard");
     } catch (err) {
-      setError(err.message || "Đã có lỗi xảy ra");
+      setError("Tài khoản hoặc mật khẩu không chính xác");
     } finally {
       setLoading(false);
     }

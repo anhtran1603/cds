@@ -216,7 +216,7 @@ export default function Page() {
             phoneNumber: user.phoneNumber,
             roleID: user.roleID,
             userName: user.userName,
-            passwordHash: ''
+            passwordHash: user.passwordHash
         });
         setIsEditMode(true);
         onOpen();
@@ -438,7 +438,7 @@ export default function Page() {
                                                         errorMessage={errors.userName}
                                                     />
                                                 </div>
-                                                {!isEditMode && (
+                                                {isEditMode && (
                                                     <div className="mb-2">
                                                         <label className="block text-gray-700">Mật khẩu<span className='text-red-500'>*</span></label>
                                                         <Input
@@ -449,9 +449,11 @@ export default function Page() {
                                                                 handleInputChange(e);
                                                                 setErrors({ ...errors, passwordHash: '' });
                                                             }}
-                                                            fullWidth
+                                                            disabled={true}
                                                             isInvalid={!!errors.passwordHash}
                                                             errorMessage={errors.passwordHash}
+                                                            placeholder="Mật khẩu không thể chỉnh sửa"
+                                                            fullWidth
                                                         />
                                                     </div>
                                                 )}
@@ -498,6 +500,7 @@ export default function Page() {
                                 <TableColumn key="phoneNumber">SỐ ĐIỆN THOẠI</TableColumn>
                                 <TableColumn key="roleID">VAI TRÒ</TableColumn>
                                 <TableColumn key="userName">TÊN ĐĂNG NHẬP</TableColumn>
+                                <TableColumn key="passwordHash">Mật khẩu</TableColumn>
                                 <TableColumn key="actions">THAO TÁC</TableColumn>
                             </TableHeader>
                             <TableBody items={items}>
@@ -508,6 +511,7 @@ export default function Page() {
                                         <TableCell>{item.phoneNumber}</TableCell>
                                         <TableCell>{item.role?.roleName}</TableCell>
                                         <TableCell>{item.userName}</TableCell>
+                                        <TableCell>{item.passwordHash}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2">
                                                 <Button
