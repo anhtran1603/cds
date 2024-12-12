@@ -31,8 +31,7 @@ export default function UploadFile(props) {
             reader.onerror = (error) => reject(error);
         });
     };
-
-
+    console.log(fileName);
     return (
         <div>
             <form onSubmit={handleUpload}>
@@ -44,8 +43,10 @@ export default function UploadFile(props) {
                         isReadOnly
                         fullWidth
                         isRequired = {isRequired}
+                        isInvalid = {isRequired && !fileName}
+                        errorMessage = { isRequired && !fileName ? title + " không được để trống" : ''}
                     />
-                    <div className="flex flex-col items-center justify-center">
+                    <div className={ isRequired && !fileName ?"flex flex-col items-center justify-center mb-5" :"flex flex-col items-center justify-center"}>
                                 <label className="flex flex-col items-center justify-center w-full border-2 border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100">
                                     <div className="flex flex-col items-center justify-center -mt-0 rounded-lg h-14 p-4">
                                         <FontAwesomeIcon icon={faUpload} className="text-black-400" />

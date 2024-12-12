@@ -22,7 +22,7 @@ export default function Page() {
 
     useEffect(() => {
         const filtered = applications.filter(driver =>
-            (searchTerm === "" || driver.applicationID.toLowerCase().includes(searchTerm.toLowerCase())) &&
+            (searchTerm === ""  || driver.companies?.companyName.toLowerCase().includes(searchTerm.toLowerCase() ) || driver.applicationID.toLowerCase().includes(searchTerm.toLowerCase())) &&
             (!trangThai || driver.status.toLowerCase() === trangThai.toLowerCase())
         );
         setFilteredDrivers(filtered);

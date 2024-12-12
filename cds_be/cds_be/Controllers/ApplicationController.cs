@@ -21,7 +21,7 @@ namespace cds_be.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Application>>> GetApplications()
         {
-            var data = await _context.Applications.ToListAsync();
+            var data = await _context.Applications.Include(a => a.Companies).ToListAsync();
             return data;
         }
 

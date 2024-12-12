@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Pagination, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
+import { Table, TableHeader, TableColumn, TableBody, TableRow, Spinner, TableCell, Input, Pagination, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
 
 import { getCompanies, addCompany, updateCompany, deleteCompany } from '../../helper/api';
 import { SearchIcon } from '../../button-icon/searchIcon';
@@ -256,7 +256,9 @@ export default function Page() {
  
     return (
         <>
-            {loading ? (<p>Loading...</p>) :
+            {loading ? (<div class="flex items-center justify-center h-screen">
+                <Spinner size="lg" />
+            </div>) :
             (
                 <div className="container mx-auto p-4">
                     <h1 className="text-2xl font-bold mb-4">Danh sách doanh nghiệp</h1>

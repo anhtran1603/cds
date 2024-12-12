@@ -55,7 +55,7 @@ export default function Page() {
     const [result, setResult] = useState(null);
 
     const [resultContent, setResultContent] = useState(null);
-
+    const [isRequiredSH, setIsRequiredSH] = useState(false);
 
     const [newLicense, setNewLicense] = useState({
         licenseNumber: '',
@@ -231,19 +231,19 @@ export default function Page() {
     //     { label: "Nguyễn Văn C", value: "Nguyễn Văn C" },
     // ];
 
-    const addEmployee = () => {
-        setNewApplication({
-            ...newApplication,
-            employees: [...newApplication.employees, { name: '', qualification: '', licenseType: '', vehicle: '', result: '' }]
-        });
-    };
+    // const addEmployee = () => {
+    //     setNewApplication({
+    //         ...newApplication,
+    //         employees: [...newApplication.employees, { name: '', qualification: '', licenseType: '', vehicle: '', result: '' }]
+    //     });
+    // };
 
-    useEffect(() => {
-        if (newApplication.submitDate) {
-            var date = new Date(newApplication.submitDate).toISOString();
-            setSubmitDate(parseAbsoluteToLocal(date));
-        }
-    }, [newApplication]);
+    // useEffect(() => {
+    //     if (newApplication.submitDate) {
+    //         var date = new Date(newApplication.submitDate).toISOString();
+    //         setSubmitDate(parseAbsoluteToLocal(date));
+    //     }
+    // }, [newApplication]);
 
     const handleAddApplication = (e) => {
         e.preventDefault();
@@ -269,13 +269,13 @@ export default function Page() {
         setIsPhanCong(true);
     }
 
-    function formatDate(date) {
-        const d = new Date(date);
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
+    // function formatDate(date) {
+    //     const d = new Date(date);
+    //     const year = d.getFullYear();
+    //     const month = String(d.getMonth() + 1).padStart(2, '0');
+    //     const day = String(d.getDate()).padStart(2, '0');
+    //     return `${year}-${month}-${day}`;
+    // }
 
     const handleGuiThamDinh = async () => {
         var data = {
@@ -367,6 +367,26 @@ export default function Page() {
         setNewLicense({ ...newLicense, [name]: value });
     };
 
+
+    const handleTuChoi = async () => {
+        setIsRequiredSH(true)
+        if (!examinationPlan || !result) {
+            toast.error("Vui lòng tải thông báo sát hạch và kết quả sát hạch");
+
+            return;
+        }
+
+        setNewApplication({
+            ...newApplication,
+            examinationPlan: examinationPlan,
+            result: result,
+            examinationPlanContent: examinationPlanContent,
+            resultContent: resultContent
+        });
+
+        setIsReason(true);
+    }
+
     const renderButton = (status) => {
 
         if (status === "Chờ xử lý" && user?.roleId === 1) {
@@ -397,7 +417,7 @@ export default function Page() {
                     <Button type="submit" onClick={handleGuiXetDuyet} className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700">
                         Gửi duyệt hồ sơ
                     </Button>
-                    <Button type="submit" onClick={() => setIsReason(true)} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <Button type="submit" onClick={handleTuChoi} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
                         Yêu cầu bổ sung hồ sơ
                     </Button>
                 </>
@@ -421,14 +441,14 @@ export default function Page() {
 
             return (
                 <>
-                <Button type="submit" onClick={handleDuyet} className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-700">
-                    Xác nhận cấp giấy phép mới
-                </Button>
-                <Button type="submit" onClick={setIsReason(true)} className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700">
-                    Từ chối cấp giấy phép
-                </Button>
+                    <Button type="submit" onClick={handleDuyet} className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        Xác nhận cấp giấy phép mới
+                    </Button>
+                    <Button type="submit" onClick={handleTuChoi} className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700">
+                        Từ chối cấp giấy phép
+                    </Button>
                 </>
-                
+
             )
         }
 
@@ -454,9 +474,9 @@ export default function Page() {
                     {/* <Button type="submit" onClick={onOpen} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
                         Yêu cầu thẩm định lại
                     </Button> */}
-                    {/* <Button type="submit" onClick={onOpen} className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500">
-                   Từ chối
-                </Button> */}
+                    <Button type="submit" onClick={() => router.push('/dashboard/new')} className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500">
+                        Đóng
+                    </Button>
                 </div>
             </div>
             {
@@ -939,7 +959,7 @@ export default function Page() {
                     </AccordionItem>
                 </Accordion>
                 {
-                    (newApplication.status === "Đã duyệt" || newApplication.status === "Đã hoàn thành") &&
+                    (newApplication.status === "Đã duyệt" || newApplication.status === "Đã hoàn thành" || newApplication.status === "Đã từ chối") &&
                     <div>
                         <div className="m-2">
 
@@ -953,7 +973,9 @@ export default function Page() {
                                         newApplication.status === "Đã duyệt" && user?.userId == newApplication.appraiser ?
                                             <>
                                                 {/* <label className="block text-gray-700">Thông báo sát hạch</label> */}
-                                                <UploadFile isRequired={true} filename={newApplication.examinationPlan} title={"Thông báo sát hạch"} name='examinationPlan' setName={setExaminationPlan} setBase64Content={setExaminationPlanContent} />
+
+                                                <UploadFile isRequired={isRequiredSH} title="Thông báo sát hạch" fileName={examinationPlan} name='examinationPlan' setName={setExaminationPlan} setBase64Content={setExaminationPlanContent} />
+                                                {/* <UploadFile isRequired={isRequiredSH} filename={examinationPlan} title={"Thông báo sát hạch"} name='examinationPlan' setName={setExaminationPlan} setBase64Content={setExaminationPlanContent} /> */}
 
                                             </> :
                                             <Input
@@ -980,7 +1002,7 @@ export default function Page() {
 
                                         newApplication.status === "Đã duyệt" && user?.userId == newApplication.appraiser ?
                                             <>
-                                                <UploadFile isRequired={true} filename={newApplication?.result} title="Kết quả sát hạch"  name='result' setName={setResult} setBase64Content={setResultContent} />
+                                                <UploadFile fileName={result} title="Kết quả sát hạch" isRequired={isRequiredSH} name='result' setName={setResult} setBase64Content={setResultContent} />
                                             </> :
                                             <Input
                                                 label="Kết quả sát hạch"
@@ -1000,92 +1022,97 @@ export default function Page() {
                                 </div>
                             </div>
                         </div>
-                        <div className="m-2">
-                            <h3 className="text-xl font-bold mb-2">Thông tin giấy phép</h3>
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
-                                    <Input
-                                        label="Số giấy phép"
-                                        type="text"
-                                        name="licenseNumber"
-                                        value={maHS}
-                                        fullWidth
-                                        isRequired
-                                        isReadOnly={newApplication.status === "Đã hoàn thành" || newApplication.appraiser != user?.userId}
-                                    />
-                                </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
-                                    {
-                                        newApplication.status === "Đã duyệt" && user?.userId == newApplication.appraiser ? <Input
-                                            label="Ngày cấp"
-                                            type="date"
-                                            name="issueDate"
-                                            onChange={handleLicenseChange}
-                                            fullWidth
-                                            required
-                                        /> : <Input readonly
-                                            label="Ngày cấp"
-                                            type="text"
-                                            name="issueDate"
-                                            value={new Date(newLicense?.issueDate).toLocaleDateString()}
+                        {
+                            newApplication.status === "Đã duyệt" || newApplication.status === "Đã hoàn thành" && (
+                                <div className="m-2">
+                                    <h3 className="text-xl font-bold mb-2">Thông tin giấy phép</h3>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="mb-2">
+                                            {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                            <Input
+                                                label="Số giấy phép"
+                                                type="text"
+                                                name="licenseNumber"
+                                                value={newLicense?.licenseNumber ? newLicense.licenseNumber : maHS}
+                                                fullWidth
+                                                isRequired
+                                                isReadOnly={newApplication.status === "Đã hoàn thành" || newApplication.appraiser != user?.userId}
+                                            />
+                                        </div>
+                                        <div className="mb-2">
+                                            {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                            {
+                                                newApplication.status === "Đã duyệt" && user?.userId == newApplication.appraiser ? <Input
+                                                    label="Ngày cấp"
+                                                    type="date"
+                                                    name="issueDate"
+                                                    onChange={handleLicenseChange}
+                                                    fullWidth
+                                                    required
+                                                /> : <Input readonly
+                                                    label="Ngày cấp"
+                                                    type="text"
+                                                    name="issueDate"
+                                                    value={new Date(newLicense?.issueDate).toLocaleDateString()}
 
-                                            fullWidth
-                                            isReadOnly
-                                        />
-                                    }
+                                                    fullWidth
+                                                    isReadOnly
+                                                />
+                                            }
 
-                                </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
-                                    {
-                                        newApplication.status === "Đã duyệt" && user?.userId == newApplication.appraiser ? <Input
-                                            label="Ngày hết hạn"
-                                            type="date"
-                                            name="expiryDate"
-                                            onChange={handleLicenseChange}
-                                            fullWidth
-                                            required
+                                        </div>
+                                        <div className="mb-2">
+                                            {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                            {
+                                                newApplication.status === "Đã duyệt" && user?.userId == newApplication.appraiser ? <Input
+                                                    label="Ngày hết hạn"
+                                                    type="date"
+                                                    name="expiryDate"
+                                                    onChange={handleLicenseChange}
+                                                    fullWidth
+                                                    required
 
-                                        /> : <Input readonly
-                                            label="Ngày hết hạn"
-                                            type="text"
-                                            name="expiryDate"
-                                            value={new Date(newLicense?.issueDate).toLocaleDateString()}
-                                            fullWidth
-                                            isReadOnly
-                                        />
-                                    }
+                                                /> : <Input readonly
+                                                    label="Ngày hết hạn"
+                                                    type="text"
+                                                    name="expiryDate"
+                                                    value={new Date(newLicense?.issueDate).toLocaleDateString()}
+                                                    fullWidth
+                                                    isReadOnly
+                                                />
+                                            }
 
 
+                                        </div>
+                                        <div className="mb-2">
+                                            {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                            <Input readonly
+                                                label="Cơ quan cấp"
+                                                type="text"
+                                                name="issuingAuthority"
+                                                onChange={handleLicenseChange}
+                                                value={newLicense?.issuingAuthority}
+                                                fullWidth
+                                                isReadOnly={newApplication.status === "Đã hoàn thành" || user?.userId !== newApplication?.appraiser}
+                                            />
+                                        </div>
+                                        <div className="mb-2">
+                                            {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                            <Input readonly
+                                                label="Người ký"
+                                                type="text"
+                                                name="signedBy"
+                                                onChange={handleLicenseChange}
+                                                value={newLicense?.signedBy}
+                                                fullWidth
+                                                isReadOnly={newApplication.status === "Đã hoàn thành" && user?.userId !== newApplication?.appraiser}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
-                                    <Input readonly
-                                        label="Cơ quan cấp"
-                                        type="text"
-                                        name="issuingAuthority"
-                                        onChange={handleLicenseChange}
-                                        value={newLicense?.issuingAuthority}
-                                        fullWidth
-                                        isReadOnly={newApplication.status === "Đã hoàn thành" || user?.userId !== newApplication?.appraiser}
-                                    />
-                                </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
-                                    <Input readonly
-                                        label="Người ký"
-                                        type="text"
-                                        name="signedBy"
-                                        onChange={handleLicenseChange}
-                                        value={newLicense?.signedBy}
-                                        fullWidth
-                                        isReadOnly={newApplication.status === "Đã hoàn thành" && user?.userId !== newApplication?.appraiser}
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                            )
+                        }
+
                     </div>
                 }
 

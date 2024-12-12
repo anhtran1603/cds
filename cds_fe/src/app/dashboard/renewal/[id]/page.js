@@ -11,6 +11,7 @@ import ReasonModal from "../../../components/ReasonModal";
 import { toast } from 'react-toastify';
 import UploadFile from '../../../components/uploadFile';
 import { handleDownload } from '../../../helper'
+import { set } from 'date-fns';
 // import { getApplications, getLicenses } from '../../../helper/api';
 
 export default function Page() {
@@ -53,6 +54,8 @@ export default function Page() {
     const [examinationPlan, setExaminationPlan] = useState(null);
     const [examinationPlanContent, setExaminationPlanContent] = useState(null);
     const [result, setResult] = useState(null);
+    const [isRequiredSH, setIsRequiredSH] = useState(false);
+    const [isRequiredGP, setIsRequiredGP] = useState(false);
 
     const [resultContent, setResultContent] = useState(null);
 
@@ -79,26 +82,6 @@ export default function Page() {
 
     }, [])
 
-    useEffect(() => {
-
-        var getData = async () => {
-            const data = await getCompanies();
-            setCompanies(data);
-        }
-
-        getData()
-
-    }, [getCompanies]);
-
-    useEffect(() => {
-        const getCompanyName = () => {  // Get company name by companyID
-            var company = companies.find((com) => com.companyID === newApplication.companyID);
-            setCompanyName(company?.companyName);
-        }
-
-        getCompanyName();
-    }, [newApplication.companyID, companies]);
-
     const getAppliaction = useCallback(async () => {
 
         var data = await getApplication(id);
@@ -121,6 +104,13 @@ export default function Page() {
             setNewLicense(license);
         }
 
+        const com = await getCompanies();
+        setCompanies(com);
+
+        var company = com.find((com) => com.companyID === data.companyID);
+        setCompanyName(company?.companyName);
+
+
     }, [id]);
 
 
@@ -130,7 +120,7 @@ export default function Page() {
         // console.log(user);
         setUser(user);
         getAppliaction();
-    }, [getAppliaction]);
+    }, []);
 
 
 
@@ -304,6 +294,13 @@ export default function Page() {
     }
 
     const handleGuiXetDuyet = async () => {
+        setIsRequiredSH(false);
+        setIsRequiredGP(true)
+        if (!newLicense?.expiryDate || !newLicense?.issueDate || !newLicense?.issuingAuthority || !newLicense?.signedBy) {
+
+            toast.error("Vui lòng nhập đầy đủ thông tin giấy phép");
+            return;
+        }
         var data = {
             ...newApplication,
             status: "Đã xử lý",
@@ -337,6 +334,42 @@ export default function Page() {
         }
     }
 
+    const handleGuiDuyetTuChoi = async () => {
+        setIsRequiredGP(false);
+        setIsRequiredSH(true)
+        if (!examinationPlan || !result) {
+            toast.error("Vui lòng tải thông báo sát hạch và kết quả sát hạch");
+
+            return;
+        }
+        setNewApplication({
+            ...newApplication,
+            examinationPlan: examinationPlan,
+            result: result,
+            examinationPlanContent: examinationPlanContent,
+            resultContent: resultContent
+        });
+
+        setIsReason(true);
+    }
+
+
+    const handleDuyetTuChoi = async () => {
+        var data = {
+            ...newApplication,
+            status: "Đã bị loại",
+        }
+        var rs = await updateApplication(newApplication.applicationID, data);
+
+        if (rs) {
+            getAppliaction();
+            onOpenChange(false);
+            toast.success("Duyệt từ chối thành công");
+        } else {
+            toast.error("Có lỗi xảy ra, vui lòng thử lại sau");
+        }
+    }
+
     const handleLicenseChange = (e) => {
         const { name, value } = e.target;
         setNewLicense({ ...newLicense, [name]: value });
@@ -347,7 +380,7 @@ export default function Page() {
 
             return (
                 <>
-                    <Button type="submit" onClick={() => router.push(`/dashboard/new/${id}/edit`)} className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <Button type="submit" onClick={() => router.push(`/dashboard/renewal/${id}/edit`)} className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-700">
                         Chỉnh sửa hồ sơ
                     </Button>
                     {
@@ -368,6 +401,9 @@ export default function Page() {
 
             return (
                 <>
+                    <Button type="submit" onClick={handleGuiDuyetTuChoi} className="bg-orange-400 text-white px-4 py-2 rounded hover:bg-orange-700">
+                        Gửi từ chối cấp lại giấy phép
+                    </Button>
                     <Button type="submit" onClick={handleGuiXetDuyet} className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700">
                         Gửi duyệt hồ sơ
                     </Button>
@@ -378,18 +414,29 @@ export default function Page() {
             )
         }
 
-        if (status === "Đã xử lý" && user?.roleId === 3) {
+        if (user?.roleId === 3) {
             return (
                 <>
-                <Button type="submit" onClick={setIsReason(true)} className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-700">
-                    Từ chối cấp lại giấy phép
-                </Button>
-                    <Button type="submit" onClick={handleXetDuyet} className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700">
-                        Duyệt hồ sơ và cấp lại giấy phép mới
-                    </Button>
-                    <Button type="submit" onClick={() => setIsReason(true)} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-                        Yêu cầu thẩm định lại
-                    </Button>
+                    {
+                        status == "Duyệt từ chối" && (
+                            <Button type="submit" onClick={handleDuyetTuChoi} className="bg-orange-400 text-white px-4 py-2 rounded hover:bg-orange-700">
+                                Từ chối cấp lại giấy phép
+                            </Button>
+                        )
+                    }
+
+                    {
+                        status === "Đã xử lý" && (
+                            <>
+                                <Button type="submit" onClick={handleXetDuyet} className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700">
+                                    Duyệt hồ sơ và cấp lại giấy phép mới
+                                </Button>
+                                <Button type="submit" onClick={() => setIsReason(true)} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+                                    Yêu cầu thẩm định lại
+                                </Button>
+                            </>
+                        )
+                    }
                 </>
             )
         }
@@ -425,9 +472,9 @@ export default function Page() {
                     {/* <Button type="submit" onClick={onOpen} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
                         Yêu cầu thẩm định lại
                     </Button> */}
-                    {/* <Button type="submit" onClick={onOpen} className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500">
-                   Từ chối
-                </Button> */}
+                    <Button type="submit" onClick={() => { router.push('/dashboard/renewal') }} className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500">
+                        Đóng
+                    </Button>
                 </div>
             </div>
             {
@@ -603,7 +650,7 @@ export default function Page() {
                                     fullWidth
                                     required
                                 />
-                            </div>       
+                            </div>
                         </div>
                     </AccordionItem>
                     <AccordionItem
@@ -910,7 +957,7 @@ export default function Page() {
                     </AccordionItem>
                 </Accordion>
                 {
-                    (newApplication.status === "Đang xử lý" || newApplication.status === "Đã xử lý"  || newApplication.status === "Đã hoàn thành") &&
+                    (newApplication.status === "Đang xử lý" || newApplication.status === "Đã xử lý" || newApplication.status === "Đã hoàn thành") &&
                     <div>
                         <div className="m-2">
 
@@ -923,8 +970,8 @@ export default function Page() {
 
                                         newApplication.status === "Đang xử lý" ?
                                             <>
-                                                
-                                                <UploadFile title="Thông báo sát hạch (Nếu có)" fileName={newApplication.examinationPlan} name='examinationPlan' setName={setExaminationPlan} setBase64Content={setExaminationPlanContent} />
+                                                {/* <UploadFile title="Bản khai cá nhân" fileName={newEmployee.personalStatement} isRequired={true} name="examinationPlan" setName={setExaminationPlan} setBase64Content={setExaminationPlanContent} /> */}
+                                                <UploadFile isRequired={isRequiredSH} title="Thông báo sát hạch (Nếu có)" fileName={examinationPlan} name='examinationPlan' setName={setExaminationPlan} setBase64Content={setExaminationPlanContent} />
 
                                             </> :
                                             <Input
@@ -952,7 +999,7 @@ export default function Page() {
                                         newApplication.status === "Đang xử lý" ?
                                             <>
                                                 <label className="block text-gray-700"></label>
-                                                <UploadFile fileName="Kết quả sát hạch (Nếu có)" title="Kết quả sát hạch (Nếu có)" name='result' setName={setResult} setBase64Content={setResultContent} />
+                                                <UploadFile fileName={result} title="Kết quả sát hạch (Nếu có)" isRequired={isRequiredSH} name='result' setName={setResult} setBase64Content={setResultContent} />
                                             </> :
                                             <Input
                                                 label="Kết quả sát hạch (Nếu có)"
@@ -981,8 +1028,8 @@ export default function Page() {
                                         label="Số giấy phép"
                                         type="text"
                                         name="licenseNumber"
-                                        
-                                        value={maHS}
+
+                                        value={newLicense?.licenseNumber ? newLicense.licenseNumber : maHS}
                                         fullWidth
                                         isRequired
                                         isReadOnly
@@ -998,14 +1045,16 @@ export default function Page() {
                                             onChange={handleLicenseChange}
                                             fullWidth
                                             required
+                                            isInvalid={isRequiredGP && !newLicense?.issueDate}
+                                            errorMessage={isRequiredGP && !newLicense?.issueDate ? "Ngày cấp không được để trống" : ""}
                                         /> : <Input readonly
                                             label="Ngày cấp"
                                             type="text"
                                             name="issueDate"
                                             value={new Date(newLicense?.issueDate).toLocaleDateString()}
-
                                             fullWidth
                                             isReadOnly
+
                                         />
                                     }
 
@@ -1020,6 +1069,8 @@ export default function Page() {
                                             onChange={handleLicenseChange}
                                             fullWidth
                                             required
+                                            isInvalid={isRequiredGP && !newLicense?.expiryDate}
+                                            errorMessage={isRequiredGP && !newLicense?.expiryDate ? "Ngày hết hạn không được để trống" : ""}
 
                                         /> : <Input readonly
                                             label="Ngày hết hạn"
@@ -1043,6 +1094,8 @@ export default function Page() {
                                         value={newLicense?.issuingAuthority}
                                         fullWidth
                                         isReadOnly={newApplication.status === "Đã hoàn thành"}
+                                        isInvalid={isRequiredGP && !newLicense?.issuingAuthority}
+                                        errorMessage={isRequiredGP && !newLicense?.issuingAuthority ? "Cơ quan cấp không được để trống" : ""}
                                     />
                                 </div>
                                 <div className="mb-2">
@@ -1055,6 +1108,8 @@ export default function Page() {
                                         value={newLicense?.signedBy}
                                         fullWidth
                                         isReadOnly={newApplication.status === "Đã hoàn thành"}
+                                        isInvalid={isRequiredGP && !newLicense?.signedBy}
+                                        errorMessage={isRequiredGP && !newLicense?.signedBy ? "Người ký không được để trống" : ""}
                                     />
                                 </div>
                             </div>

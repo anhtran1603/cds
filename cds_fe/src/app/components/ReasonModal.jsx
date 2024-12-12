@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Textarea } from "@nextui-org/react";
-import { getUserByRole, updateApplication } from "../../app/helper/api";
+import { updateApplication } from "../../app/helper/api";
 import { toast } from 'react-toastify';
 export default function ReasonModal(props) {
 
@@ -19,7 +19,7 @@ export default function ReasonModal(props) {
         }
         var data = {
             ...application,
-            status: status ===  "Đã duyệt" ? "Bị từ chối" : 'Đang xử lý' ? "Chờ xử lý" : "Đang xử lý",
+            status: status === "Đã duyệt" ? "Đã từ chối" : 'Đang xử lý' ? application.applicationType = "Cấp lại" ? "Duyệt từ chối" : "Chờ xử lý" : "Đang xử lý",
             reasonRejection: reason
         }
         var rs = await updateApplication(application.applicationID, data);

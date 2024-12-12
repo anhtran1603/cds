@@ -1,8 +1,8 @@
 'use client'
 import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileAlt, faRedo, faHourglassHalf, faSpinner, faCheckCircle, faHandPointLeft } from '@fortawesome/free-solid-svg-icons';
-import { getApplications } from '../helper/api';
+import { faFileAlt, faRedo, faHourglassHalf, faSpinner, faCheckCircle, faHandPointLeft, faCertificate, faReceipt, faExclamation, faBookBookmark } from '@fortawesome/free-solid-svg-icons';
+import { getApplications, getLicensesCompleted } from '../helper/api';
 export default function Page() {
   
 
@@ -13,10 +13,17 @@ export default function Page() {
     const [completedApplications, setCompletedApplications] = useState(0);
     const [returnedApplications, setReturnedApplications] = useState(0);
 
+    const [licenses, setLicenses] = useState(0);
+    const [expiredLicenses, setExpiredLicenses] = useState(0);
+    const [activeLicenses, setActiveLicenses] = useState(0);
+
+
+
 
 
     useEffect(() => {
         const getData = async () => {
+            // Call the API to get the applications
             const data = await getApplications();
             setNewApplications(data.filter((app) => app.applicationType === "Cấp mới").length);
             setRenewedApplications(data.filter((app) => app.applicationType === "Cấp lại").length);
@@ -24,6 +31,15 @@ export default function Page() {
             setProcessingApplications(data.filter((app) => app.status === "Đang xử lý").length);
             setCompletedApplications(data.filter((app) => app.status === "Đã hoàn thành").length);
             setReturnedApplications(data.filter((app) => !!app.reasonRejection ).length);
+
+            //call api to get license
+
+            const license = await getLicensesCompleted();
+            console.log(license);
+            setLicenses(license.length);
+            setExpiredLicenses(license.filter((l) => l.status === "Hết hiệu lực").length);
+
+            setActiveLicenses(license.filter((l) => l.status === "Hiệu lực").length);
         }
         getData();
     }, []);
@@ -83,6 +99,33 @@ export default function Page() {
                         <div>
                             <div className="text-cyan-700 text-xl font-bold">Số hồ sơ bị trả lại</div>
                             <div className="text-3xl font-bold text-cyan-700">{returnedApplications}</div>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-span-2">
+                    <div className="p-4 bg-stone-100 shadow rounded-lg flex items-center">
+                        <FontAwesomeIcon icon={faCertificate} className="text-stone-700 mr-5 text-3xl" />
+                        <div>
+                            <div className="text-stone-400 text-xl font-bold">Tổng số giấy phép đã cấp</div>
+                            <div className="text-3xl font-bold text-stone-400">{licenses}</div>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-span-2">
+                    <div className="p-4 bg-amber-100 shadow rounded-lg flex items-center">
+                        <FontAwesomeIcon icon={faReceipt} className="text-amber-700 mr-5 text-3xl" />
+                        <div>
+                            <div className="text-amber-700 text-xl font-bold">Số giấy phép còn hiệu lực</div>
+                            <div className="text-3xl font-bold text-amber-700">{activeLicenses}</div>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-span-2">
+                    <div className="p-4 bg-rose-100 shadow rounded-lg flex items-center">
+                        <FontAwesomeIcon icon={faBookBookmark} className="text-rose-400 mr-5 text-3xl" />
+                        <div>
+                            <div className="text-rose-400 text-xl font-bold">Số giấy phép hết hiệu lực</div>
+                            <div className="text-3xl font-bold text-rose-400">{expiredLicenses}</div>
                         </div>
                     </div>
                 </div>

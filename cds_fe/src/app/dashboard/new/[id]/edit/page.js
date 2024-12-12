@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react';
-import { Input, Accordion, AccordionItem, Autocomplete, AutocompleteItem, Image, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
+import { Input, Accordion, AccordionItem, Autocomplete, AutocompleteItem, Image, Spinner, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
 import { updateApplication, getApplication, updateEmployee, getEmployees, getCompanies, getApplications, checkDuplicateCitizenID } from '../../../../helper/api';
 import UploadFile from '../../../../components/uploadFile';
 import { toast } from 'react-toastify'
@@ -77,7 +77,7 @@ export default function Page() {
         returnDate: '',
         applicationFile: '',
         certificationDocument: '',
-        
+
         // Employee fields
         citizenID: '',
         fullName: '',
@@ -121,24 +121,24 @@ export default function Page() {
         setLoading(false);
     }, [id, getEmployees, getApplication]);
 
-    
+
     useEffect(() => {
         getData();
-        
+
     }, [getData]);
 
     console.log("newEmployee", companyId);
     const handleEmployeeInputChange = (e) => {
         const { name, value } = e.target;
-        
+
         setNewEmployee({ ...newEmployee, [name]: value });
     };
-    
+
     const handleEmployeeFileChange = (e) => {
         const { name, files } = e.target;
         setNewEmployee({ ...newEmployee, [name]: files[0] });
     };
-    
+
     useEffect(() => {
         setNewApplication({
             ...newApplication,
@@ -148,8 +148,8 @@ export default function Page() {
             certificationDocumentContent: certificationDocumentContent
         });
     }, [applicationFileContent, applicationFile, certificationDocumentContent, certificationDocument]);
-    
-    
+
+
     useEffect(() => {
         setNewEmployee({
             ...newEmployee,
@@ -158,8 +158,9 @@ export default function Page() {
             personalStatementContent: personalStatementContent,
             healthCertificateContent: healthCertificateContent
         });
-        
+
     }, [personalStatement, healthCertificate, personalStatementContent, healthCertificateContent]);
+
     const validateForm = async () => {
         const currentApplications = await getApplications();
 
@@ -191,35 +192,35 @@ export default function Page() {
             healthCertificate: '',
             status: ''
         };
-   
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const phoneRegex = /^(0[1-9][0-9]{8,9})$/;
         const taxCodeRegex = /^[0-9]{10}(-[0-9]{3})?$/;
 
 
-        if (!newApplication.companyID) {
+        if (!newApplication?.companyID) {
             newErrors.companyID = 'Vui lòng chọn doanh nghiệp';
             isValid = false;
         }
 
-        if (!newApplication.submitterName.trim()) {
+        if (!newApplication?.submitterName?.trim()) {
             newErrors.submitterName = 'Người nộp hồ sơ không được để trống';
             isValid = false;
         }
 
-        if (!newApplication.submitDate) {
+        if (!newApplication?.submitDate) {
             newErrors.submitDate = 'Ngày nộp hồ sơ không được để trống';
             isValid = false;
         }
 
-        if (!newApplication.email.trim()) {
+        if (!newApplication?.email?.trim()) {
             newErrors.email = 'Email không được để trống';
             isValid = false;
         } else if (!emailRegex.test(newApplication.email)) {
             newErrors.email = 'Email không đúng định dạng';
             isValid = false;
-        } 
-        if (!newApplication.phoneNumber.trim()) {
+        }
+        if (!newApplication?.phoneNumber?.trim()) {
             newErrors.phoneNumber = 'Số điện thoại không được để trống';
             isValid = false;
         } else if (!phoneRegex.test(newApplication.phoneNumber)) {
@@ -227,24 +228,24 @@ export default function Page() {
             isValid = false;
         }
 
-        if (!newApplication.taxCode.trim()) {
+        if (!newApplication?.taxCode?.trim()) {
             newErrors.taxCode = 'Mã số thuế không được để trống';
             isValid = false;
         } else if (!taxCodeRegex.test(newApplication.taxCode)) {
             newErrors.taxCode = 'Mã số thuế không đúng định dạng';
             isValid = false;
-        } 
+        }
 
-        if (!newApplication.duration) {
+        if (!newApplication?.duration) {
             newErrors.duration = 'Thời hạn giải quyết không được để trống';
             isValid = false;
         }
 
-        if (!newApplication.returnDate) {
+        if (!newApplication?.returnDate) {
             newErrors.returnDate = 'Ngày hẹn trả không được để trống';
             isValid = false;
         }
-  
+
 
         if (!applicationFile) {
             newErrors.applicationFile = 'Đơn đề nghị không được để trống';
@@ -257,22 +258,22 @@ export default function Page() {
         }
 
 
-        if (!newEmployee.citizenID.trim()) {
+        if (!newEmployee?.citizenID?.trim()) {
             newErrors.citizenID = 'Mã số cá nhân không được để trống';
             isValid = false;
         }
 
-        if (!newEmployee.fullName.trim()) {
+        if (!newEmployee?.fullName?.trim()) {
             newErrors.fullName = 'Họ và tên không được để trống';
             isValid = false;
         }
 
-        if (!newEmployee.dateOfBirth) {
+        if (!newEmployee?.dateOfBirth) {
             newErrors.dateOfBirth = 'Ngày sinh không được để trống';
             isValid = false;
         }
 
-        if (!newEmployee.phoneNumber.trim()) {
+        if (!newEmployee?.phoneNumber?.trim()) {
             newErrors.phoneNumber = 'Số điện thoại không được để trống';
             isValid = false;
         } else if (!phoneRegex.test(newEmployee.phoneNumber)) {
@@ -280,30 +281,30 @@ export default function Page() {
             isValid = false;
         }
 
-        if (!newEmployee.licenseType) {
+        if (!newEmployee?.licenseType) {
             newErrors.licenseType = 'Loại chuyên môn không được để trống';
             isValid = false;
         }
 
-        if (!newEmployee.railwayType) {
+        if (!newEmployee?.railwayType) {
             newErrors.railwayType = 'Loại tuyến đường sắt không được để trống';
             isValid = false;
         }
 
-        if (!newEmployee.trainingLevel.trim()) {
+        if (!newEmployee?.trainingLevel?.trim()) {
             newErrors.trainingLevel = 'Trình độ không được để trống';
             isValid = false;
         }
-        // if (!newEmployee.companyName) {
+        // if (!newEmployee?.companyName) {
         //     newErrors.companyName = 'Đơn vị công tác không được để trống';
         //     isValid = false;
         // }
-        if (!newEmployee.experienceMonths) {
+        if (!newEmployee?.experienceMonths) {
             newErrors.experienceMonths = 'Số tháng làm phụ tàu không được để trống';
             isValid = false;
         }
 
-        if (!newEmployee.testVehicleCode.trim()) {
+        if (!newEmployee?.testVehicleCode?.trim()) {
             newErrors.testVehicleCode = 'Phương tiện sát hạch không được để trống';
             isValid = false;
         }
@@ -318,7 +319,7 @@ export default function Page() {
             isValid = false;
         }
 
-        if (!newEmployee.status) {
+        if (!newEmployee?.status) {
             newErrors.status = 'Tình trạng công tác không được để trống';
             isValid = false;
         }
@@ -327,32 +328,6 @@ export default function Page() {
         return isValid;
     }
 
-    const handleAddEmployee = (e) => {
-        // e.preventDefault();
-        // Handle the form submission logic here
-
-        setEmployees([...employees, newEmployee]);
-        // Reset the form
-        setNewEmployee({
-            employeeID: '',
-            avatar: null,
-            citizenID: '',
-            fullName: '',
-            dateOfBirth: '',
-            phoneNumber: '',
-            licenseType: '',
-            testVehicleCode: '',
-            companyID: '',
-            trainingLevel: '',
-            experienceMonths: '',
-            personalStatement: '',
-            personalStatementContent: '',
-            healthCertificate: "",
-            healthCertificateContent: "",
-            railwayType: ''
-        });
-        onOpenChange();
-    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -437,81 +412,78 @@ export default function Page() {
 
         if (isValid) {
             setLoading(true);
-        try {
-            var data = {
-                ...newApplication,
-                applicationType: 'Cấp mới',
-                status: 'Chờ xử lý',
-                submitDate: new Date(newApplication.submitDate),
-                returnDate: new Date(newApplication.returnDate),
-            }
-
-            var rs = await updateApplication(id, data);
-            if (rs) {
-
-                if (newEmployee) {   // Add employees to the application
-                    // employees.forEach(async (employee) => {
-                    var employeeData = {
-                        ...newEmployee,
-                        applicationID: id,
-                        companyID: newApplication.companyID,
-                        birthDate: newEmployee.dateOfBirth,
-                    }
-                    await updateEmployee(newEmployee.employeeID, employeeData);
-                    // });
+            try {
+                var data = {
+                    ...newApplication,
+                    applicationType: 'Cấp mới',
+                    status: 'Chờ xử lý',
+                    submitDate: new Date(newApplication.submitDate),
+                    returnDate: new Date(newApplication.returnDate),
                 }
 
-                toast.success('Chỉnh sửa hồ sơ thành công');
-                router.push('/dashboard/new/' + id);
-                // Reset the form
-                setNewApplication({
-                    applicationID: '',
-                    companyID: '',
-                    taxCode: '',
-                    submitterName: '',
-                    submitDate: '',
-                    status: '',
-                    email: '',
-                    phoneNumber: '',
-                    requestForm: '',
-                    certificationDocument: '',
-                    certificationDocumentContent: '',
+                var rs = await updateApplication(id, data);
+                if (rs) {
 
-                });
-                setNewEmployee({
-                    avatar: null,
-                    citizenID: '',
-                    fullName: '',
-                    dateOfBirth: '',
-                    phoneNumber: '',
-                    licenseType: '',
-                    testVehicleCode: '',
-                    companyID: '',
-                    trainingLevel: '',
-                    experienceMonths: '',
-                    personalStatement: '',
-                    personalStatementContent: '',
-                    healthCertificate: "",
-                    healthCertificateContent: "",
-                    railwayType: '',
-                    status: 'Đang công tác'
-                });
-            } else {
-                toast.error('Thêm hồ sơ thất bại');
+                    if (newEmployee) {   // Add employees to the application
+                        // employees.forEach(async (employee) => {
+                        var employeeData = {
+                            ...newEmployee,
+                            applicationID: id,
+                            companyID: newApplication.companyID,
+                            birthDate: newEmployee.dateOfBirth,
+                        }
+                        await updateEmployee(newEmployee.employeeID, employeeData);
+                        // });
+                    }
+
+                    toast.success('Chỉnh sửa hồ sơ thành công');
+                    router.push('/dashboard/new/' + id);
+                    // Reset the form
+                    setNewApplication({
+                        applicationID: '',
+                        companyID: '',
+                        taxCode: '',
+                        submitterName: '',
+                        submitDate: '',
+                        status: '',
+                        email: '',
+                        phoneNumber: '',
+                        requestForm: '',
+                        certificationDocument: '',
+                        certificationDocumentContent: '',
+
+                    });
+                    setNewEmployee({
+                        avatar: null,
+                        citizenID: '',
+                        fullName: '',
+                        dateOfBirth: '',
+                        phoneNumber: '',
+                        licenseType: '',
+                        testVehicleCode: '',
+                        companyID: '',
+                        trainingLevel: '',
+                        experienceMonths: '',
+                        personalStatement: '',
+                        personalStatementContent: '',
+                        healthCertificate: "",
+                        healthCertificateContent: "",
+                        railwayType: '',
+                        status: 'Đang công tác'
+                    });
+                } else {
+                    toast.error('Thêm hồ sơ thất bại');
+                }
+
+            } catch (error) {
+                console.log(error);
+                toast.error('Có lỗi xảy ra. Vui lòng thử lại');
+            } finally {
+                setLoading(false);
             }
-
-        } catch (error) {
-            console.log(error);
-            toast.error('Có lỗi xảy ra. Vui lòng thử lại');
-        }finally {
-            setLoading(false);
         }
-    }
 
     };
-
-    console.log("newApplication", newApplication);
-    console.log("newEmployee", newEmployee);
 
     const handleChangeCompany = (value) => {
 
@@ -571,10 +543,12 @@ export default function Page() {
             reader.onerror = (error) => reject(error);
         });
     };
-    if(loading){
-        return <div>Loading...</div>
+    if (loading) {
+        return <div class="flex items-center justify-center h-screen">
+            <Spinner size="lg" />
+        </div>
     }
-    
+
     return (
         <div className="container mx-auto p-4">
             < div className="flex items-center justify-between ">
@@ -604,6 +578,7 @@ export default function Page() {
                                     fullWidth
                                     isRequired
                                     disabled
+                                    maxLength={12}
                                 />
                             </div>
                             <div className="mb-2">
@@ -611,6 +586,8 @@ export default function Page() {
                                     label="Chọn doanh nghiệp"
                                     name='companyID'
                                     defaultItems={companies}
+                                    isInvalid={!!errors.companyID}
+                                    errorMessage={errors.companyID}
                                     // defaultInputValue={"Công ty hồng thái"}
                                     onInputChange={handleChangeCompany}
                                     defaultSelectedKey={companyId}
@@ -630,7 +607,7 @@ export default function Page() {
                                     fullWidth
                                     isRequired
                                     isInvalid={!!errors.taxCode}
-                                            errorMessage={errors.taxCode}
+                                    errorMessage={errors.taxCode}
                                 />
                             </div>
                             <div className="mb-2">
@@ -645,7 +622,7 @@ export default function Page() {
                                     fullWidth
                                     required
                                     isInvalid={!!errors.submitterName}
-                                            errorMessage={errors.submitterName}
+                                    errorMessage={errors.submitterName}
                                 />
                             </div>
                             <div className="mb-2">
@@ -730,7 +707,7 @@ export default function Page() {
                                     fullWidth
                                     required
                                     isInvalid={!!errors.returnDate}
-                                            errorMessage={errors.returnDate}
+                                    errorMessage={errors.returnDate}
                                 />
                             </div>
                         </div>
@@ -761,7 +738,7 @@ export default function Page() {
                                     fullWidth
                                     required
                                 /> */}
-                                <UploadFile  title ="Văn bản chứng nhận" fileName={newApplication.certificationDocument} name="certificationDocument" setName={setCertificationDocument} setBase64Content={setCertificationDocumentContent} />
+                                <UploadFile title="Văn bản chứng nhận" fileName={newApplication.certificationDocument} name="certificationDocument" setName={setCertificationDocument} setBase64Content={setCertificationDocumentContent} />
                             </div>
                         </div>
                         <div className="mb-2">
@@ -797,8 +774,8 @@ export default function Page() {
                                         onChange={handleEmployeeInputChange}
                                         fullWidth
                                         required
-                                        isInvalid={!!errors.citizenID }
-                                        errorMessage={errors.citizenID }
+                                        isInvalid={!!errors.citizenID}
+                                        errorMessage={errors.citizenID}
                                     />
                                 </div>
                                 <div className="mb-2">
@@ -826,7 +803,7 @@ export default function Page() {
                                         fullWidth
                                         required
                                         isInvalid={!!errors.dateOfBirth}
-                                                errorMessage={errors.dateOfBirth}
+                                        errorMessage={errors.dateOfBirth}
                                     />
                                 </div>
                                 <div className="mb-2">
@@ -874,7 +851,7 @@ export default function Page() {
                                         name='railwayType'
                                         fullWidth
                                         isInvalid={!!errors.railwayType}
-                                                errorMessage={errors.railwayType}
+                                        errorMessage={errors.railwayType}
                                         isRequired
                                     >
                                         {railwayTypes.map((animal) => (
@@ -948,15 +925,15 @@ export default function Page() {
                                         required
                                         height={56}
                                         isInvalid={!!errors.testVehicleCode}
-                                                errorMessage={errors.testVehicleCode}
+                                        errorMessage={errors.testVehicleCode}
                                     />
                                 </div>
                                 <div className="">
                                     {/* <label className="block text-gray-700">Bản khai cá nhân</label> */}
-                                
+
                                     <UploadFile title="Bản khai cá nhân" fileName={newEmployee.personalStatement} name="personalStatement" setName={setPersonalStatement} setBase64Content={setPersonalStatementContent} />
                                 </div>
-                                <div className="">  
+                                <div className="">
                                     {/* <Input
                                                 type="file"
                                                 name="healthCertificate"
@@ -964,7 +941,7 @@ export default function Page() {
                                                 fullWidth
                                                 required
                                             /> */}
-                                    <UploadFile title="Giấy khám sức khỏe" fileName={newEmployee.healthCertificate}  name="healthCertificate" setName={setHealthCertificate} setBase64Content={setHealthCertificateContent} />
+                                    <UploadFile title="Giấy khám sức khỏe" fileName={newEmployee.healthCertificate} name="healthCertificate" setName={setHealthCertificate} setBase64Content={setHealthCertificateContent} />
                                 </div>
                                 <div className="mb-2">
                                     {/* <label className="block text-gray-700">Loại tuyến đường sắt</label> */}

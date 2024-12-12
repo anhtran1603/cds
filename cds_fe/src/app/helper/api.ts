@@ -173,7 +173,7 @@ export async function getApplications() {
         },
         next: { revalidate: 3600 }
     });
-    console.log(res);
+
     if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to fetch data');

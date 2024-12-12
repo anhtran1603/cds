@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react';
-import { Input, Accordion, AccordionItem, Autocomplete, AutocompleteItem, Image, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
+import { Input, Accordion, AccordionItem, Autocomplete, AutocompleteItem, Image, Spinner, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
 import { addApplication, addEmployee, checkDuplicateCitizenID, getApplications, getCompanies } from '../../../helper/api';
 import UploadFile from '../../../components/uploadFile';
 import { toast } from 'react-toastify';
@@ -72,7 +72,7 @@ export default function Page() {
         returnDate: '',
         applicationFile: '',
         certificationDocument: '',
-        
+
         // Employee fields
         citizenID: '',
         fullName: '',
@@ -108,7 +108,7 @@ export default function Page() {
             citizenID: '',
             fullName: '',
             dateOfBirth: '',
-            phoneNumber: '',
+            employeePhoneNumber: '',
             licenseType: '',
             railwayType: '',
             companyName: '',
@@ -125,37 +125,38 @@ export default function Page() {
         const taxCodeRegex = /^[0-9]{10}(-[0-9]{3})?$/;
 
 
-        if (!newApplication.companyID) {
+        if (!newApplication?.companyID) {
             newErrors.companyID = 'Vui lòng chọn doanh nghiệp';
             isValid = false;
         }
 
-        if (!newApplication.submitterName.trim()) {
+        if (!newApplication?.submitterName?.trim()) {
             newErrors.submitterName = 'Người nộp hồ sơ không được để trống';
             isValid = false;
         }
 
-        if (!newApplication.submitDate) {
+        if (!newApplication?.submitDate) {
             newErrors.submitDate = 'Ngày nộp hồ sơ không được để trống';
             isValid = false;
         }
 
-        if (!newApplication.email.trim()) {
+        if (!newApplication?.email?.trim()) {
             newErrors.email = 'Email không được để trống';
             isValid = false;
         } else if (!emailRegex.test(newApplication.email)) {
             newErrors.email = 'Email không đúng định dạng';
             isValid = false;
-        } else {
-            const emailExists = currentApplications.some(app =>
-                app.email.toLowerCase() === newApplication.email.toLowerCase()
-            );
-            if (emailExists) {
-                newErrors.email = 'Email đã tồn tại trong hệ thống';
-                isValid = false;
-            }
         }
-        if (!newApplication.phoneNumber.trim()) {
+        // else {
+        //     const emailExists = currentApplications.some(app =>
+        //         app.email.toLowerCase() === newApplication.email.toLowerCase()
+        //     );
+        //     if (emailExists) {
+        //         newErrors.email = 'Email đã tồn tại trong hệ thống';
+        //         isValid = false;
+        //     }
+        // }
+        if (!newApplication?.phoneNumber?.trim()) {
             newErrors.phoneNumber = 'Số điện thoại không được để trống';
             isValid = false;
         } else if (!phoneRegex.test(newApplication.phoneNumber)) {
@@ -163,32 +164,33 @@ export default function Page() {
             isValid = false;
         }
 
-        if (!newApplication.taxCode.trim()) {
+        if (!newApplication?.taxCode?.trim()) {
             newErrors.taxCode = 'Mã số thuế không được để trống';
             isValid = false;
-        } else if (!taxCodeRegex.test(newApplication.taxCode)) {
-            newErrors.taxCode = 'Mã số thuế không đúng định dạng';
-            isValid = false;
-        } else {
-            const taxCodeExists = currentApplications.some(app =>
-                app.taxCode === newApplication.taxCode
-            );
-            if (taxCodeExists) {
-                newErrors.taxCode = 'Mã số thuế đã tồn tại trong hệ thống';
-                isValid = false;
-            }
         }
+        // else if (!taxCodeRegex.test(newApplication.taxCode)) {
+        //     newErrors.taxCode = 'Mã số thuế không đúng định dạng';
+        //     isValid = false;
+        // } else {
+        //     const taxCodeExists = currentApplications.some(app =>
+        //         app.taxCode === newApplication.taxCode
+        //     );
+        //     if (taxCodeExists) {
+        //         newErrors.taxCode = 'Mã số thuế đã tồn tại trong hệ thống';
+        //         isValid = false;
+        //     }
+        // }
 
-        if (!newApplication.duration) {
+        if (!newApplication?.duration) {
             newErrors.duration = 'Thời hạn giải quyết không được để trống';
             isValid = false;
         }
 
-        if (!newApplication.returnDate) {
+        if (!newApplication?.returnDate) {
             newErrors.returnDate = 'Ngày hẹn trả không được để trống';
             isValid = false;
         }
-  
+
 
         if (!applicationFile) {
             newErrors.applicationFile = 'Đơn đề nghị không được để trống';
@@ -201,7 +203,7 @@ export default function Page() {
         }
 
 
-        if (!newEmployee.citizenID.trim()) {
+        if (!newEmployee?.citizenID?.trim()) {
             newErrors.citizenID = 'Mã số cá nhân không được để trống';
             isValid = false;
         } else {
@@ -212,48 +214,48 @@ export default function Page() {
             }
         }
 
-        if (!newEmployee.fullName.trim()) {
+        if (!newEmployee?.fullName?.trim()) {
             newErrors.fullName = 'Họ và tên không được để trống';
             isValid = false;
         }
 
-        if (!newEmployee.dateOfBirth) {
+        if (!newEmployee?.dateOfBirth) {
             newErrors.dateOfBirth = 'Ngày sinh không được để trống';
             isValid = false;
         }
 
-        if (!newEmployee.phoneNumber.trim()) {
-            newErrors.phoneNumber = 'Số điện thoại không được để trống';
+        if (!newEmployee?.phoneNumber?.trim()) {
+            newErrors.employeePhoneNumber = 'Số điện thoại không được để trống';
             isValid = false;
         } else if (!phoneRegex.test(newEmployee.phoneNumber)) {
-            newErrors.phoneNumber = 'Số điện thoại không đúng định dạng';
+            newErrors.employeePhoneNumber = 'Số điện thoại không đúng định dạng';
             isValid = false;
         }
 
-        if (!newEmployee.licenseType) {
+        if (!newEmployee?.licenseType) {
             newErrors.licenseType = 'Loại chuyên môn không được để trống';
             isValid = false;
         }
 
-        if (!newEmployee.railwayType) {
+        if (!newEmployee?.railwayType) {
             newErrors.railwayType = 'Loại tuyến đường sắt không được để trống';
             isValid = false;
         }
 
-        if (!newEmployee.trainingLevel.trim()) {
+        if (!newEmployee?.trainingLevel?.trim()) {
             newErrors.trainingLevel = 'Trình độ không được để trống';
             isValid = false;
         }
-        if (!newEmployee.companyName) {
+        if (!companyName) {
             newErrors.companyName = 'Đơn vị công tác không được để trống';
             isValid = false;
         }
-        if (!newEmployee.experienceMonths) {
+        if (!newEmployee?.experienceMonths) {
             newErrors.experienceMonths = 'Số tháng làm phụ tàu không được để trống';
             isValid = false;
         }
 
-        if (!newEmployee.testVehicleCode.trim()) {
+        if (!newEmployee?.testVehicleCode?.trim()) {
             newErrors.testVehicleCode = 'Phương tiện sát hạch không được để trống';
             isValid = false;
         }
@@ -268,7 +270,7 @@ export default function Page() {
             isValid = false;
         }
 
-        if (!newEmployee.status) {
+        if (!newEmployee?.status) {
             newErrors.status = 'Tình trạng công tác không được để trống';
             isValid = false;
         }
@@ -442,10 +444,8 @@ export default function Page() {
                     status: 'Chờ xử lý',
                     submitDate: new Date(newApplication.submitDate),
                     returnDate: new Date(newApplication.returnDate),
-                    appraiser: 0,
+                    appraiser: 0
 
-                    applicationFile: applicationFileContent,
-                    certificationDocument: certificationDocumentContent
                 };
 
                 const applicationResult = await addApplication(applicationData);
@@ -456,11 +456,8 @@ export default function Page() {
                         id: 0,
                         applicationID: maHS,
                         companyID: newApplication.companyID,
-                        birthDate: newEmployee.dateOfBirth,
-
+                        birthDate: new Date(newEmployee.dateOfBirth),
                         avatar: newEmployee.avatar,
-                        personalStatement: personalStatementContent,
-                        healthCertificate: healthCertificateContent
                     };
 
                     await addEmployee(employeeData);
@@ -591,7 +588,9 @@ export default function Page() {
     };
     return (
         <>
-            {loading ? (<div>...Loading</div>) : (
+            {loading ? (<div class="flex items-center justify-center h-screen">
+                <Spinner size="lg" />
+            </div>) : (
                 <div className="container mx-auto p-4">
                     < div className="flex items-center justify-between ">
                         <h1 className="text-2xl font-bold mb-4">Thêm mới hồ sơ</h1>
@@ -620,7 +619,7 @@ export default function Page() {
                                             fullWidth
                                             isRequired
                                             disabled
-                                           
+
                                         />
                                     </div>
                                     <div className="mb-2">
@@ -822,6 +821,7 @@ export default function Page() {
                                                 fullWidth
                                                 required
                                                 isRequired
+                                                maxLength={12}
                                                 isInvalid={!!errors.citizenID || isDuplicate}
                                                 errorMessage={errors.citizenID || (isDuplicate ? 'Mã số cá nhân đã tồn tại' : '')}
                                             />
@@ -864,8 +864,8 @@ export default function Page() {
                                                 onChange={handleEmployeeInputChange}
                                                 fullWidth
                                                 required
-                                                isInvalid={!!errors.phoneNumber}
-                                                errorMessage={errors.phoneNumber}
+                                                isInvalid={!!errors.employeePhoneNumber}
+                                                errorMessage={errors.employeePhoneNumber}
                                             />
                                         </div>
                                         <div className="mb-2">

@@ -47,5 +47,7 @@ namespace cds_be.Models
         public string? ExaminationPlanContent { get; set; }
         public string? Result { get; set; }
         public string? ResultContent { get; set; }
+
+        public Company? Companies { get; set; }
     }
 }
