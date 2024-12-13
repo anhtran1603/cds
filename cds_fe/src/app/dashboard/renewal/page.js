@@ -43,6 +43,8 @@ export default function Page() {
         { label: "Đang xử lý", value: "Đang xử lý" },
         { label: "Đã xử lý", value: "Đã xử lý" },
         { label: "Đã duyệt", value: "Đã duyệt" },
+        { label: "Duyệt từ chối", value: "Duyệt từ chối" },
+        { label: "Đã từ chối", value: "Đã từ chối" },
         { label: "Đã hoàn thành", value: "Đã hoàn thành" },
     ];
 
@@ -64,8 +66,6 @@ export default function Page() {
             console.error("error", error);
         }
     }
-
-
 
     var getData = useCallback(async () => {
         const data = await getApplications();

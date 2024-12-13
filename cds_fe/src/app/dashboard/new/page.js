@@ -44,6 +44,7 @@ export default function Page() {
         { label: "Đang xử lý", value: "Đang xử lý" },
         { label: "Đã xử lý", value: "Đã xử lý" },
         { label: "Đã duyệt", value: "Đã duyệt" },
+        { label: "Đã từ chối", value: "Đã từ chối" },
         { label: "Đã hoàn thành", value: "Đã hoàn thành" },
     ];
 
