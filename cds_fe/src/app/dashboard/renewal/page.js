@@ -39,7 +39,7 @@ export default function Page() {
     }, [page, filteredDrivers]);
 
     var status = [ // Example data for Autocomplete
-        { label: "Chờ xử lý", value: "Chờ sử lý" },
+        { label: "Chờ xử lý", value: "Chờ xử lý" },
         { label: "Đang xử lý", value: "Đang xử lý" },
         { label: "Đã xử lý", value: "Đã xử lý" },
         { label: "Đã duyệt", value: "Đã duyệt" },

@@ -223,16 +223,10 @@ export default function Page() {
         if (!newApplication?.phoneNumber?.trim()) {
             newErrors.phoneNumber = 'Số điện thoại không được để trống';
             isValid = false;
-        } else if (!phoneRegex.test(newApplication.phoneNumber)) {
-            newErrors.phoneNumber = 'Số điện thoại không đúng định dạng';
-            isValid = false;
-        }
+        } 
 
         if (!newApplication?.taxCode?.trim()) {
             newErrors.taxCode = 'Mã số thuế không được để trống';
-            isValid = false;
-        } else if (!taxCodeRegex.test(newApplication.taxCode)) {
-            newErrors.taxCode = 'Mã số thuế không đúng định dạng';
             isValid = false;
         }
 
@@ -372,7 +366,7 @@ export default function Page() {
         { label: "Đường sắt đô thị", value: "Đường sắt đô thị" },
         { label: "Đường sắt nông thôn", value: "Đường sắt nông thôn" }
     ];
-
+    console.log("newApplication",newApplication)
     const handleUpdateApplication = async (e) => {
         e.preventDefault();
         // Handle the form submission logic here
@@ -678,6 +672,7 @@ export default function Page() {
                                     required
                                     isInvalid={!!errors.phoneNumber}
                                     errorMessage={errors.phoneNumber}
+                                    maxLength={10}
                                 />
                             </div>
                             <div className="mb-2">
@@ -818,6 +813,7 @@ export default function Page() {
                                         required
                                         isInvalid={!!errors.phoneNumber}
                                         errorMessage={errors.phoneNumber}
+                                        maxLength={10  }
                                     />
                                 </div>
                                 <div className="mb-2">

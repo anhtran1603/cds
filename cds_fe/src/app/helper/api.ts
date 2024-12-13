@@ -229,6 +229,7 @@ export async function updateApplication(id: string, data: any) {
         next: { revalidate: 3600 }
     });
 
+    console.log(res);
     if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to fetch data');
@@ -382,7 +383,7 @@ export async function getLicensesCompleted() {
         },
         next: { revalidate: 3600 }
     });
-
+    console.log(res);   
     if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to fetch data');

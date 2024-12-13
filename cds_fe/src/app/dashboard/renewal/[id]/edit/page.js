@@ -231,9 +231,6 @@ export default function Page() {
         if (!newApplication?.taxCode?.trim()) {
             newErrors.taxCode = 'Mã số thuế không được để trống';
             isValid = false;
-        } else if (!taxCodeRegex.test(newApplication.taxCode)) {
-            newErrors.taxCode = 'Mã số thuế không đúng định dạng';
-            isValid = false;
         }
 
         if (!newApplication?.duration) {

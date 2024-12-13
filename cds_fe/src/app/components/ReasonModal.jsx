@@ -10,16 +10,44 @@ export default function ReasonModal(props) {
     const handleReasonChange = (value) => {
         setReason(value);
     }
-
+    console.log("application", status);
     const handleAddReason = async () => {
         // Call the onAdd function with the selected user
         if (!reason) {
             toast.error("Vui lòng nhập lý do");
             return;
         }
+        var  statusUpdated = "";
+        if(application.applicationType == "Cấp lại"){
+            if(status == "Đã duyệt"){
+                statusUpdated = "Duyệt từ chối";
+            }
+            if(status == "Đang xử lý"){
+                if(!application.examinationPlan){
+                    statusUpdated = "Chờ xử lý";
+                }else{
+                    statusUpdated = "Duyệt từ chối";
+                }
+               
+            }
+            if(status == "Đã xử lý"){
+                statusUpdated = "Đang xử lý";
+            }
+        }else{
+            if(status == "Đã duyệt"){
+                statusUpdated = "Đã từ chối";
+            }
+            if(status == "Đang xử lý"){
+                statusUpdated = "chờ xử lý";
+            }
+            if(status == "Đã xử lý"){
+                statusUpdated = "Đang xử lý";
+            }
+        }
+
         var data = {
             ...application,
-            status: status === "Đã duyệt" ? "Đã từ chối" : 'Đang xử lý' ? application.applicationType = "Cấp lại" ? "Duyệt từ chối" : "Chờ xử lý" : "Đang xử lý",
+            status: statusUpdated,
             reasonRejection: reason
         }
         var rs = await updateApplication(application.applicationID, data);

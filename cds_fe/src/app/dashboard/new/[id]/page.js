@@ -329,6 +329,13 @@ export default function Page() {
     }
 
     const handleDuyet = async () => {
+        setIsRequiredSH(true)
+        console.log("newLicense", !newLicense?.licenseNumber , !newLicense?.issueDate , !newLicense?.expiryDate  , !newLicense?.issuingAuthority , !newLicense?.signedBy , !examinationPlan  , !result);
+        if ( !newLicense?.issueDate || !newLicense?.expiryDate  || !newLicense?.issuingAuthority || !newLicense?.signedBy || !examinationPlan  || !result) {
+            toast.error("Vui lòng nhập đầy đủ thông tin giấy phép");
+            return;
+        }
+
         var data = {
             ...newApplication,
             status: "Đã hoàn thành",
@@ -389,7 +396,7 @@ export default function Page() {
 
     const renderButton = (status) => {
 
-        if (status === "Chờ xử lý" && user?.roleId === 1) {
+        if (status === "Chờ xử lý" && user?.roleId == 1) {
 
             return (
                 <>
@@ -417,7 +424,7 @@ export default function Page() {
                     <Button type="submit" onClick={handleGuiXetDuyet} className="bg-green-400 text-white px-4 py-2 rounded hover:bg-green-700">
                         Gửi duyệt hồ sơ
                     </Button>
-                    <Button type="submit" onClick={handleTuChoi} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <Button type="submit" onClick={() => setIsReason(true)} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
                         Yêu cầu bổ sung hồ sơ
                     </Button>
                 </>
@@ -1023,7 +1030,7 @@ export default function Page() {
                             </div>
                         </div>
                         {
-                            newApplication.status === "Đã duyệt" || newApplication.status === "Đã hoàn thành" && (
+                            (newApplication.status === "Đã duyệt" || newApplication.status === "Đã hoàn thành") && (
                                 <div className="m-2">
                                     <h3 className="text-xl font-bold mb-2">Thông tin giấy phép</h3>
                                     <div className="grid grid-cols-3 gap-4">
@@ -1049,6 +1056,8 @@ export default function Page() {
                                                     onChange={handleLicenseChange}
                                                     fullWidth
                                                     required
+                                                    isInvalid={isRequiredSH && !newLicense?.issueDate}
+                                                    errorMessage="Vui lòng nhập ngày cấp"
                                                 /> : <Input readonly
                                                     label="Ngày cấp"
                                                     type="text"
@@ -1071,6 +1080,8 @@ export default function Page() {
                                                     onChange={handleLicenseChange}
                                                     fullWidth
                                                     required
+                                                    isInvalid={isRequiredSH && !newLicense?.expiryDate}
+                                                    errorMessage="Vui lòng nhập ngày hết hạn"
 
                                                 /> : <Input readonly
                                                     label="Ngày hết hạn"
@@ -1086,19 +1097,23 @@ export default function Page() {
                                         </div>
                                         <div className="mb-2">
                                             {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
-                                            <Input readonly
+                                            <Input 
                                                 label="Cơ quan cấp"
                                                 type="text"
                                                 name="issuingAuthority"
                                                 onChange={handleLicenseChange}
                                                 value={newLicense?.issuingAuthority}
                                                 fullWidth
+                                                isInvalid={isRequiredSH && !newLicense?.issuingAuthority}
+                                                errorMessage="Vui lòng nhập cơ quan cấp"
                                                 isReadOnly={newApplication.status === "Đã hoàn thành" || user?.userId !== newApplication?.appraiser}
                                             />
                                         </div>
                                         <div className="mb-2">
                                             {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
                                             <Input readonly
+                                                isInvalid={isRequiredSH && !newLicense?.signedBy}
+                                                errorMessage="Vui lòng nhập người ký"
                                                 label="Người ký"
                                                 type="text"
                                                 name="signedBy"

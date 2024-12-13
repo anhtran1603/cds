@@ -4,7 +4,7 @@ import { Input, Accordion, AccordionItem, Textarea, DateInput, DatePicker, Autoc
 import { faDownload, faEye, faUpload } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { CalendarDate, parseDate, parseAbsoluteToLocal, CalendarDateTime } from "@internationalized/date";
-import { getEmployees, getApplications, getLicenses, updateApplication, getApplication, getCompanies, getUserByRole, addLicense } from '../../../helper/api';
+import { getEmployees, updateLicense, getLicenses, updateApplication, getApplication, getCompanies, getUserByRole, addLicense } from '../../../helper/api';
 import { useRouter, useParams } from "next/navigation";
 import PhanCongModal from "../../../components/PhanCongModal";
 import ReasonModal from "../../../components/ReasonModal";
@@ -312,6 +312,7 @@ export default function Page() {
         }
         var rs = await updateApplication(newApplication.applicationID, data);
 
+
         //lưu giấy phép
         var license = {
             ...newLicense,
@@ -322,7 +323,13 @@ export default function Page() {
             status: "Hiệu lực"
         }
 
-        var res = await addLicense(license);
+        if (newApplication.reasonRejection) {
+            var res = await updateLicense(newLicense.licenseID, license);
+        } else {
+            var res = await addLicense(license);
+        }
+
+
 
 
         if (rs && res) {
@@ -347,7 +354,8 @@ export default function Page() {
             examinationPlan: examinationPlan,
             result: result,
             examinationPlanContent: examinationPlanContent,
-            resultContent: resultContent
+            resultContent: resultContent,
+
         });
 
         setIsReason(true);
@@ -357,7 +365,7 @@ export default function Page() {
     const handleDuyetTuChoi = async () => {
         var data = {
             ...newApplication,
-            status: "Đã bị loại",
+            status: "Đã từ chối",
         }
         var rs = await updateApplication(newApplication.applicationID, data);
 
@@ -957,7 +965,7 @@ export default function Page() {
                     </AccordionItem>
                 </Accordion>
                 {
-                    (newApplication.status === "Đang xử lý" || newApplication.status === "Đã xử lý" || newApplication.status === "Đã hoàn thành") &&
+                    (newApplication.status === "Đang xử lý" || newApplication.status === "Đã xử lý" || newApplication.status === "Đã hoàn thành" || newApplication.status == "Duyệt từ chối" || newApplication.status == "Đã từ chối") &&
                     <div>
                         <div className="m-2">
 
@@ -1019,101 +1027,106 @@ export default function Page() {
                                 </div>
                             </div>
                         </div>
-                        <div className="m-2">
-                            <h3 className="text-xl font-bold mb-2">Thông tin giấy phép</h3>
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
-                                    <Input
-                                        label="Số giấy phép"
-                                        type="text"
-                                        name="licenseNumber"
+                        {
+                            newApplication?.status != "Duyệt từ chối" && newApplication?.status != "Đã từ chối" && (
+                                <div className="m-2">
+                                    <h3 className="text-xl font-bold mb-2">Thông tin giấy phép</h3>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="mb-2">
+                                            {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                            <Input
+                                                label="Số giấy phép"
+                                                type="text"
+                                                name="licenseNumber"
 
-                                        value={newLicense?.licenseNumber ? newLicense.licenseNumber : maHS}
-                                        fullWidth
-                                        isRequired
-                                        isReadOnly
-                                    />
+                                                value={newLicense?.licenseNumber ? newLicense.licenseNumber : maHS}
+                                                fullWidth
+                                                isRequired
+                                                isReadOnly
+                                            />
+                                        </div>
+                                        <div className="mb-2">
+                                            {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                            {
+                                                newApplication.status === "Đang xử lý" && !newApplication?.reasonRejection ? <Input
+                                                    label="Ngày cấp"
+                                                    type="date"
+                                                    name="issueDate"
+                                                    onChange={handleLicenseChange}
+                                                    fullWidth
+                                                    required
+                                                    isInvalid={isRequiredGP && !newLicense?.issueDate}
+                                                    errorMessage={isRequiredGP && !newLicense?.issueDate ? "Ngày cấp không được để trống" : ""}
+                                                /> : <Input readonly
+                                                    label="Ngày cấp"
+                                                    type="text"
+                                                    name="issueDate"
+                                                    value={new Date(newLicense?.issueDate).toLocaleDateString()}
+                                                    fullWidth
+                                                    isReadOnly
+
+                                                />
+                                            }
+
+                                        </div>
+                                        <div className="mb-2">
+                                            {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                            {
+                                                newApplication.status === "Đang xử lý" && !newApplication?.reasonRejection ? <Input
+                                                    label="Ngày hết hạn"
+                                                    type="date"
+                                                    name="expiryDate"
+                                                    onChange={handleLicenseChange}
+                                                    fullWidth
+                                                    required
+                                                    isInvalid={isRequiredGP && !newLicense?.expiryDate}
+                                                    errorMessage={isRequiredGP && !newLicense?.expiryDate ? "Ngày hết hạn không được để trống" : ""}
+
+                                                /> : <Input readonly
+                                                    label="Ngày hết hạn"
+                                                    type="text"
+                                                    name="expiryDate"
+                                                    value={new Date(newLicense?.issueDate).toLocaleDateString()}
+                                                    fullWidth
+                                                    isReadOnly
+                                                />
+                                            }
+
+
+                                        </div>
+                                        <div className="mb-2">
+                                            {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                            <Input readonly
+                                                label="Cơ quan cấp"
+                                                type="text"
+                                                name="issuingAuthority"
+                                                onChange={handleLicenseChange}
+                                                value={newLicense?.issuingAuthority}
+                                                fullWidth
+                                                isReadOnly={newApplication.status === "Đã hoàn thành"}
+                                                isInvalid={isRequiredGP && !newLicense?.issuingAuthority}
+                                                errorMessage={isRequiredGP && !newLicense?.issuingAuthority ? "Cơ quan cấp không được để trống" : ""}
+                                            />
+                                        </div>
+                                        <div className="mb-2">
+                                            {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
+                                            <Input readonly
+                                                label="Người ký"
+                                                type="text"
+                                                name="signedBy"
+                                                onChange={handleLicenseChange}
+                                                value={newLicense?.signedBy}
+                                                fullWidth
+                                                isReadOnly={newApplication.status === "Đã hoàn thành"}
+                                                isInvalid={isRequiredGP && !newLicense?.signedBy}
+                                                errorMessage={isRequiredGP && !newLicense?.signedBy ? "Người ký không được để trống" : ""}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
-                                    {
-                                        newApplication.status === "Đang xử lý" ? <Input
-                                            label="Ngày cấp"
-                                            type="date"
-                                            name="issueDate"
-                                            onChange={handleLicenseChange}
-                                            fullWidth
-                                            required
-                                            isInvalid={isRequiredGP && !newLicense?.issueDate}
-                                            errorMessage={isRequiredGP && !newLicense?.issueDate ? "Ngày cấp không được để trống" : ""}
-                                        /> : <Input readonly
-                                            label="Ngày cấp"
-                                            type="text"
-                                            name="issueDate"
-                                            value={new Date(newLicense?.issueDate).toLocaleDateString()}
-                                            fullWidth
-                                            isReadOnly
+                            )
+                        }
 
-                                        />
-                                    }
-
-                                </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
-                                    {
-                                        newApplication.status === "Đang xử lý" ? <Input
-                                            label="Ngày hết hạn"
-                                            type="date"
-                                            name="expiryDate"
-                                            onChange={handleLicenseChange}
-                                            fullWidth
-                                            required
-                                            isInvalid={isRequiredGP && !newLicense?.expiryDate}
-                                            errorMessage={isRequiredGP && !newLicense?.expiryDate ? "Ngày hết hạn không được để trống" : ""}
-
-                                        /> : <Input readonly
-                                            label="Ngày hết hạn"
-                                            type="text"
-                                            name="expiryDate"
-                                            value={new Date(newLicense?.issueDate).toLocaleDateString()}
-                                            fullWidth
-                                            isReadOnly
-                                        />
-                                    }
-
-
-                                </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
-                                    <Input readonly
-                                        label="Cơ quan cấp"
-                                        type="text"
-                                        name="issuingAuthority"
-                                        onChange={handleLicenseChange}
-                                        value={newLicense?.issuingAuthority}
-                                        fullWidth
-                                        isReadOnly={newApplication.status === "Đã hoàn thành"}
-                                        isInvalid={isRequiredGP && !newLicense?.issuingAuthority}
-                                        errorMessage={isRequiredGP && !newLicense?.issuingAuthority ? "Cơ quan cấp không được để trống" : ""}
-                                    />
-                                </div>
-                                <div className="mb-2">
-                                    {/* <label className="block text-gray-700">Đơn đề nghị</label> */}
-                                    <Input readonly
-                                        label="Người ký"
-                                        type="text"
-                                        name="signedBy"
-                                        onChange={handleLicenseChange}
-                                        value={newLicense?.signedBy}
-                                        fullWidth
-                                        isReadOnly={newApplication.status === "Đã hoàn thành"}
-                                        isInvalid={isRequiredGP && !newLicense?.signedBy}
-                                        errorMessage={isRequiredGP && !newLicense?.signedBy ? "Người ký không được để trống" : ""}
-                                    />
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 }
 

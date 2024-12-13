@@ -723,6 +723,7 @@ export default function Page() {
                                             required
                                             isInvalid={!!errors.phoneNumber}
                                             errorMessage={errors.phoneNumber}
+                                            maxLength={10}
                                         />
                                     </div>
                                     <div className="mb-2">
@@ -866,6 +867,7 @@ export default function Page() {
                                                 required
                                                 isInvalid={!!errors.employeePhoneNumber}
                                                 errorMessage={errors.employeePhoneNumber}
+                                                maxLength={10}
                                             />
                                         </div>
                                         <div className="mb-2">
