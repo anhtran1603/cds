@@ -115,7 +115,7 @@ export default function DashboardLayout({ children }) {
                                         <span className={pathname === '/dashboard/company' ? 'block p-2 rounded bg-gray-700' : 'block p-2 rounded hover:bg-gray-700'}> <FontAwesomeIcon icon={faBuilding} color="white" width={25} /> Quản lý doanh nghiệp</span>
                                     </Link>
                                 </li>
-                                {user?.role === 'admin' && (
+                                {user?.roleId == 4 && (
                                     <li className="mb-2">
                                         <Link href="/dashboard/user">
                                             <span className={pathname === '/dashboard/user' ? 'block p-2 rounded bg-gray-700' : 'block p-2 rounded hover:bg-gray-700'}> <FontAwesomeIcon icon={faUser} color="white" width={25} /> Quản lý người dùng</span>

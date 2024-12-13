@@ -63,6 +63,11 @@ export default function Page() {
         setNewUser({ ...newUser, [name]: value });
     };
 
+    const handleRoleChange = (value) => {
+        var role = roles.find(role => role.roleName === value);
+        setNewUser({ ...newUser, roleID: role.roleID });
+    }
+ 
     const showAddModal = async (e) => {
         setNewUser({
             userID: 0,
@@ -166,7 +171,9 @@ export default function Page() {
             userName: '',
             passwordHash: ''
         });
+      
         const isValid = await validateForm();
+         console.log(isValid, newUser)
         if (isValid) {
             setLoading(true);
             try {
@@ -194,7 +201,7 @@ export default function Page() {
             }
         }
     };
-
+ 
     useEffect(() => {
         const dataFiltered = users.filter(user =>
             user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -413,7 +420,7 @@ export default function Page() {
                                                 </div>
                                                 <div className="mb-2">
                                                     <label className="block text-gray-700">Vai trò<span className='text-red-500'>*</span></label>
-                                                    <Input
+                                                    {/* <Input
                                                         type="number"
                                                         min={0}
                                                         name="roleID"
@@ -425,19 +432,21 @@ export default function Page() {
                                                         fullWidth
                                                         isInvalid={!!errors.roleID}
                                                         errorMessage={errors.roleID}
-                                                    />
+                                                    /> */}
                                                     <Autocomplete
                                                         isRequired
-                                                        onChange={(e) => {
-                                                            handleInputChange(e);
+                                                        onInputChange={(e) => {
+                                                            handleRoleChange(e);
                                                             setErrors({ ...errors, roleID: '' });
                                                         }}
+                                                        value={newUser.roleID}
                                                         defaultItems={roles}
-                                                        defaultSelectedKey={newUser.roleID}
-                                                        label="Chọn vai trò"
-                                                        placeholder="Chọn vai trò"
+                                                        defaultSelectedKey={newUser.roleID+''}
+                                                        
+
+
                                                     >
-                                                        {(item) => <AutocompleteItem key={item.roleID}>{item.roleName}</AutocompleteItem>}
+                                                        {(item) => <AutocompleteItem key={item.roleID} value={item.roleID}>{item.roleName}</AutocompleteItem>}
                                                     </Autocomplete>
                                                 </div>
                                                 <div className="mb-2">
@@ -455,7 +464,7 @@ export default function Page() {
                                                         errorMessage={errors.userName}
                                                     />
                                                 </div>
-                                                {isEditMode && (
+                                                {!isEditMode && (
                                                     <div className="mb-2">
                                                         <label className="block text-gray-700">Mật khẩu<span className='text-red-500'>*</span></label>
                                                         <Input
@@ -466,10 +475,10 @@ export default function Page() {
                                                                 handleInputChange(e);
                                                                 setErrors({ ...errors, passwordHash: '' });
                                                             }}
-                                                            disabled={true}
+
                                                             isInvalid={!!errors.passwordHash}
                                                             errorMessage={errors.passwordHash}
-                                                            placeholder="Mật khẩu không thể chỉnh sửa"
+
                                                             fullWidth
                                                         />
                                                     </div>

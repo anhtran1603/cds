@@ -44,13 +44,7 @@ export async function addUser(data: any) {
         next: { revalidate: 3600 }
     });
 
-    if (!res.ok) {
-        const errorData = await res.json();
-        console.log(errorData);
-        throw new Error(errorData.message || 'Failed to fetch data');
-    }
-
-    return res.json();
+    return res;
 }
 
 export async function updateUser(id: string, data: any) {
@@ -62,7 +56,7 @@ export async function updateUser(id: string, data: any) {
         body: JSON.stringify(data),
         next: { revalidate: 3600 }
     });
-    return res.json();
+    return res;
 }
 
 export async function deleteUser(id: string) {
