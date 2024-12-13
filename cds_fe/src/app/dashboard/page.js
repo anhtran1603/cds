@@ -33,13 +33,14 @@ export default function Page() {
             setReturnedApplications(data.filter((app) => !!app.reasonRejection ).length);
 
             //call api to get license
-
-            const license = await getLicensesCompleted();
-            console.log(license);
-            setLicenses(license.length);
-            setExpiredLicenses(license.filter((l) => l.status === "Hết hiệu lực").length);
-
-            setActiveLicenses(license.filter((l) => l.status === "Hiệu lực").length);
+            if (data.length > 0) {
+                const license = await getLicensesCompleted();
+                setLicenses(license.length);
+                setExpiredLicenses(license.filter((l) => l.status === "Hết hiệu lực").length);
+    
+                setActiveLicenses(license.filter((l) => l.status === "Hiệu lực").length);
+            }
+            
         }
         getData();
     }, []);
