@@ -48,11 +48,6 @@ namespace cds_be.Controllers
                 .Where(l => l.Employee.Application.Status == "Đã hoàn thành")
                 .ToListAsync();
 
-            if (licenses == null || licenses.Count == 0)
-            {
-                return NotFound();
-            }
-
             return licenses;
         }
 

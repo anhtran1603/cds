@@ -156,12 +156,9 @@ export async function deleteCompany(id: string) {
         next: { revalidate: 3600 }
     });
 
-    if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to fetch data');
-    }
+    
 
-    return res.json();
+    return res;
 }
 
 export async function getApplications() {
@@ -497,4 +494,19 @@ export async function checkDuplicateCitizenID(citizenID: string) {
     }
     const data = await res.json();
  return data;
+}
+
+export async function getRoles() {
+    const res = await fetch(API_URL + `/role`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+        },
+        next: { revalidate: 3600 }
+    });
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to fetch data');
+    }
+    return res.json();
 }

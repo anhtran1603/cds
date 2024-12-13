@@ -1,8 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input,Spinner, Pagination, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
-
-import { getUsers, addUser, updateUser, deleteUser } from '../../helper/api';
+import { Autocomplete, AutocompleteItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Spinner, Pagination, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from '@nextui-org/react';
+import { getUsers, addUser, updateUser, deleteUser, getRoles } from '../../helper/api';
 import { SearchIcon } from '../../button-icon/searchIcon';
 import { faDownload, faEye, faPlus, faUpload } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -27,6 +26,7 @@ export default function Page() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
+    const [roles, setRoles] = useState([]);
     const rowsPerPage = 10;
     const [errors, setErrors] = useState({
         fullName: '',
@@ -48,9 +48,11 @@ export default function Page() {
     var getData = useCallback(async () => {
         setLoading(true);
         var data = await getUsers();
+        var lstRoles = await getRoles();
+        setRoles(lstRoles);
         setUsers(data);
         setLoading(false);
-    }, [getUsers]);
+    }, [getUsers, getRoles]);
 
     useEffect(() => {
         getData();
@@ -424,6 +426,19 @@ export default function Page() {
                                                         isInvalid={!!errors.roleID}
                                                         errorMessage={errors.roleID}
                                                     />
+                                                    <Autocomplete
+                                                        isRequired
+                                                        onChange={(e) => {
+                                                            handleInputChange(e);
+                                                            setErrors({ ...errors, roleID: '' });
+                                                        }}
+                                                        defaultItems={roles}
+                                                        defaultSelectedKey={newUser.roleID}
+                                                        label="Chọn vai trò"
+                                                        placeholder="Chọn vai trò"
+                                                    >
+                                                        {(item) => <AutocompleteItem key={item.roleID}>{item.roleName}</AutocompleteItem>}
+                                                    </Autocomplete>
                                                 </div>
                                                 <div className="mb-2">
                                                     <label className="block text-gray-700">Tên đăng nhập<span className='text-red-500'>*</span></label>

@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { bufferToBase64 } from '../../helper';
+import { toast } from 'react-toastify';
 export default function Page() {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [companies, setCompanies] = useState([]);
@@ -182,12 +183,13 @@ export default function Page() {
                     await getData();
                     onOpenChange();
                     setIsEditMode(false);
+                    toast.success('Cập nhật doanh nghiệp thành công');
                 } else {
-                    alert('Cập nhật doanh nghiệp thất bại');
+                    toast.error('Cập nhật doanh nghiệp thất bại');
                 }
             } catch (error) {
-                console.error('Error updating company:', error);
-                alert(error.message || 'Có lỗi xảy ra khi cập nhật doanh nghiệp');
+                
+                console.log(error.message || 'Có lỗi xảy ra khi cập nhật doanh nghiệp');
             } finally {
                 setLoading(false);
             }
@@ -200,13 +202,11 @@ export default function Page() {
                 var rs = await deleteCompany(companyId);
                 if (rs) {
                     await getData();
-                    alert('Xóa doanh nghiệp thành công');
-                } else {
-                    alert('Xóa doanh nghiệp thất bại');
-                }
+                    toast.success('Xóa doanh nghiệp thành công');
+                } 
             } catch (error) {
-                console.error('Error deleting company:', error);
-                alert('Có lỗi xảy ra khi xóa doanh nghiệp');
+                
+                toast.error('Có lỗi xảy ra khi xóa doanh nghiệp');
             } finally {
                 setLoading(false);
             }
