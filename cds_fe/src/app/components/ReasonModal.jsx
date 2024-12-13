@@ -38,7 +38,7 @@ export default function ReasonModal(props) {
                 statusUpdated = "Đã từ chối";
             }
             if(status == "Đang xử lý"){
-                statusUpdated = "chờ xử lý";
+                statusUpdated = "Chờ xử lý";
             }
             if(status == "Đã xử lý"){
                 statusUpdated = "Đang xử lý";
